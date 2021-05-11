@@ -29,6 +29,7 @@
 #include "openthread-core-config.h"
 
 #include <openthread/ncp.h>
+#include <openthread/coprocessor_rpc.h>
 
 #include "common/code_utils.hpp"
 
@@ -66,6 +67,10 @@ void otAppNcpInit(otInstance *aInstance)
     IgnoreError(otPlatUartEnable());
 
     otNcpHdlcInit(aInstance, NcpSend);
+#endif
+
+#if OPENTHREAD_CONFIG_COPROCESSOR_RPC_ENABLE
+    otCRPCInit(aInstance);
 #endif
 }
 #endif // !OPENTHREAD_ENABLE_NCP_VENDOR_HOOK
