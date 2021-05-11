@@ -33,6 +33,7 @@
 #include <openthread/diag.h>
 #include <openthread/ncp.h>
 #include <openthread/tasklet.h>
+#include <common/code_utils.hpp>
 
 #include "openthread-system.h"
 
@@ -131,7 +132,8 @@ pseudo_reset:
 
     otAppNcpInit(instance);
 
-    otCRPCSetUserCommands(sCommands, sizeof sCommands, NULL);
+    otCRPCSetUserCommands(sCommands, OT_ARRAY_LENGTH(sCommands), instance);
+
     while (!otSysPseudoResetWasRequested())
     {
         otTaskletsProcess(instance);
