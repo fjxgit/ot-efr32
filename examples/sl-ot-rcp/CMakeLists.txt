@@ -26,21 +26,6 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 #
 
-# set(COMMON_INCLUDES
-#     ${OT_PUBLIC_INCLUDES}
-#     ${PROJECT_SOURCE_DIR}/openthread/examples/platforms
-#     ${PROJECT_SOURCE_DIR}/openthread/src/core
-# )
-
-# if(EFR32_APP_SL_OT_NCP)
-#     if(OT_FTD)
-#         include(ftd.cmake)
-#     endif()
-#     if(OT_MTD)
-#         include(mtd.cmake)
-#     endif()
-# endif()
-
 if(EFR32_APP_SL_OT_RCP)
     if(OT_RCP)
         include(rcp.cmake)
