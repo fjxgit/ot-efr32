@@ -74,12 +74,12 @@ void otPlatFree(void *aPtr)
 
 #include <openthread/cli.h>
 #include <openthread/coprocessor_rpc.h>
-static void handleHelloWorld(void *  aContext, uint8_t aArgsLength, char *  aArgs[]);
+static void               handleHelloWorld(void *aContext, uint8_t aArgsLength, char *aArgs[]);
 static const otCliCommand sCommands[] = {
     {"helloWorld", handleHelloWorld},
 };
 
-static void handleHelloWorld(void *  aContext, uint8_t aArgsLength, char *  aArgs[])
+static void handleHelloWorld(void *aContext, uint8_t aArgsLength, char *aArgs[])
 {
     otCRPCOutputFormat("Hello World!\n");
 }
