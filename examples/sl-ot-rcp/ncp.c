@@ -57,7 +57,6 @@ static int NcpSend(const uint8_t *aBuf, uint16_t aBufLength)
 }
 #endif
 
-
 void otAppNcpInit(otInstance *aInstance)
 {
 #if OPENTHREAD_CONFIG_NCP_SPI_ENABLE
