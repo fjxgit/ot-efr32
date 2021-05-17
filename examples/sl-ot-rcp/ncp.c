@@ -67,9 +67,5 @@ void otAppNcpInit(otInstance *aInstance)
 
     otNcpHdlcInit(aInstance, NcpSend);
 #endif
-
-#if OPENTHREAD_CONFIG_COPROCESSOR_RPC_ENABLE
-    otCRPCInit(aInstance);
-#endif
 }
 #endif // !OPENTHREAD_ENABLE_NCP_VENDOR_HOOK

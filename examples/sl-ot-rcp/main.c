@@ -132,7 +132,9 @@ pseudo_reset:
 
     otAppNcpInit(instance);
 
+#if OPENTHREAD_CONFIG_COPROCESSOR_RPC_ENABLE
     otCRPCSetUserCommands(sCommands, OT_ARRAY_LENGTH(sCommands), instance);
+#endif
 
     while (!otSysPseudoResetWasRequested())
     {
