@@ -81,7 +81,7 @@ static const otCliCommand sCommands[] = {
 
 static void handleHelloWorld(void *aContext, uint8_t aArgsLength, char *aArgs[])
 {
-    otCRPCOutputFormat("Hello World!\n");
+    otCliOutputFormat("Hello World!\n");
 }
 
 #endif
