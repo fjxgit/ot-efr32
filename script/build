@@ -28,9 +28,8 @@
 #
 
 set -euxo pipefail
-
-OT_CMAKE_NINJA_TARGET=${OT_CMAKE_NINJA_TARGET:-}
-
+# ==============================================================================
+# Bash definitions
 if [[ -n ${BASH_SOURCE[0]} ]]; then
     script_path="${BASH_SOURCE[0]}"
 else
@@ -42,6 +41,33 @@ repo_dir="$(dirname "$script_dir")"
 
 # shellcheck source=script/efr32-definitions
 source "$script_dir/efr32-definitions"
+
+# Define slc_cmd
+slc_path="${repo_dir}/third_party/silabs/slc/slc_cli/bin/slc-cli/"
+export slc_cmd
+if command -v slc-cli; then
+    slc_cmd="slc-cli"
+elif command -v slc; then
+    slc_cmd="slc"
+else
+    echo "The 'slc-cli' command could not be found in your PATH."
+    if ! command -v "${slc_path}/slc-cli"; then
+        echo "slc-cli has not been installed yet. Please run ./script/bootstrap"
+        exit
+    else
+        slc_cmd="${slc_path}/slc-cli"
+    fi
+fi
+
+# Wrapper function to execute an slc command
+run_slc()
+{
+    mycmd=("${slc_cmd}" ${@})
+    "${mycmd[@]}"
+}
+
+# ==============================================================================
+OT_CMAKE_NINJA_TARGET=${OT_CMAKE_NINJA_TARGET:-}
 
 readonly OT_OPTIONS=(
     "-DCMAKE_BUILD_TYPE=MinSizeRel"
