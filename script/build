@@ -38,6 +38,7 @@ fi
 
 script_dir="$(dirname "$(realpath "$script_path")")"
 repo_dir="$(dirname "$script_dir")"
+board="brdXXXXY"
 
 # shellcheck source=script/efr32-definitions
 source "$script_dir/efr32-definitions"
@@ -89,6 +90,20 @@ build()
     mkdir -p "${builddir}"
     cd "${builddir}"
 
+    local generated_project_path=${builddir}/slc
+    local sdk_dir=${repo_dir}/third_party/silabs/gecko_sdk/
+
+    run_slc -v 1 generate \
+        --export-templates=${repo_dir}/third_party/silabs/slc/exporter_templates \
+        --sdk=${sdk_dir} \
+        --clear-cache \
+        --project-file=${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/sample-apps/ot-cli/ot-cli-ftd.slcp \
+        --output-type=makefile \
+        --no-copy \
+        --export-destination=${generated_project_path} \
+        --with ${board}
+    mv ${generated_project_path}/ot-cli-ftd.Makefile ${generated_project_path}/efr32.cmake
+    exit
     cmake -GNinja -DOT_COMPILE_WARNING_AS_ERROR=ON "$@" "${repo_dir}"
 
     if [[ -n ${OT_CMAKE_NINJA_TARGET[*]} ]]; then
@@ -169,6 +184,10 @@ main()
             fi
             ;;
     esac
+
+    lowercase_args=$(echo $@ | tr '[:upper:]' '[:lower:]')
+    board=$(echo ${lowercase_args} | grep -oP 'brd\d{4}[a-z]')
+    echo ${board}
 
     options+=("$@")
     build -DEFR32_PLATFORM="${platform}" "${options[@]}"
