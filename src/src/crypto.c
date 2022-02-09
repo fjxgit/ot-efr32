@@ -226,7 +226,8 @@ otError otPlatCryptoAesEncrypt(otCryptoContext *aContext, const uint8_t *aInput,
     sl_sec_man_status_t status;
     otCryptoKeyRef *    mKeyRef = NULL;
 
-    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aOutput != NULL) && (aInput != NULL)), error = OT_ERROR_INVALID_ARGS);
+    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aOutput != NULL) && (aInput != NULL)),
+                    error = OT_ERROR_INVALID_ARGS);
     mKeyRef = (otCryptoKeyRef *)aContext->mContext;
     status  = sl_sec_man_aes_encrypt(*mKeyRef, PSA_ALG_ECB_NO_PADDING, aInput, aOutput);
 
@@ -246,7 +247,7 @@ otError otPlatCryptoAesFree(otCryptoContext *aContext)
 // HMAC implementations
 otError otPlatCryptoHmacSha256Init(otCryptoContext *aContext)
 {
-    otError error = OT_ERROR_NONE;
+    otError              error         = OT_ERROR_NONE;
     psa_mac_operation_t *mMacOperation = (psa_mac_operation_t *)aContext->mContext;
     *mMacOperation                     = psa_mac_operation_init();
     return error;
@@ -254,7 +255,7 @@ otError otPlatCryptoHmacSha256Init(otCryptoContext *aContext)
 
 otError otPlatCryptoHmacSha256Deinit(otCryptoContext *aContext)
 {
-    otError error = OT_ERROR_NONE;
+    otError              error         = OT_ERROR_NONE;
     psa_mac_operation_t *mMacOperation = (psa_mac_operation_t *)aContext->mContext;
     sl_sec_man_status_t  status;
 
@@ -310,16 +311,17 @@ exit:
 
 // HKDF platform implementations
 // As the HKDF does not actually use mbedTLS APIs but uses HMAC module, this feature is not implemented.
-otError otPlatCryptoHkdfExpand(otCryptoContext * aContext,
-                               const uint8_t *   aInfo,
-                               uint16_t          aInfoLength,
-                               uint8_t *         aOutputKey,
-                               uint16_t          aOutputKeyLength)
+otError otPlatCryptoHkdfExpand(otCryptoContext *aContext,
+                               const uint8_t *  aInfo,
+                               uint16_t         aInfoLength,
+                               uint8_t *        aOutputKey,
+                               uint16_t         aOutputKeyLength)
 {
     otError             error = OT_ERROR_NONE;
     sl_sec_man_status_t status;
 
-    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aInfo != NULL) && (aOutputKey != NULL)), error = OT_ERROR_INVALID_ARGS);
+    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aInfo != NULL) && (aOutputKey != NULL)),
+                    error = OT_ERROR_INVALID_ARGS);
 
     status = sl_sec_man_key_derivation_expand(aContext->mContext, aInfo, aInfoLength, aOutputKey, aOutputKeyLength);
 
@@ -337,8 +339,9 @@ otError otPlatCryptoHkdfExtract(otCryptoContext *  aContext,
     otError             error = OT_ERROR_NONE;
     sl_sec_man_status_t status;
 
-    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aKey != NULL) && (aSalt != NULL) && (aSaltLength != 0)),
-                    error = OT_ERROR_INVALID_ARGS);
+    otEXPECT_ACTION(
+        ((aContext != NULL) && (aContext->mContext != NULL) && (aKey != NULL) && (aSalt != NULL) && (aSaltLength != 0)),
+        error = OT_ERROR_INVALID_ARGS);
 
     status = sl_sec_man_key_derivation_extract(aContext->mContext, PSA_ALG_SHA_256, aKey->mKeyRef, aSalt, aSaltLength);
 
@@ -351,9 +354,9 @@ exit:
 // SHA256 platform implementations
 otError otPlatCryptoSha256Init(otCryptoContext *aContext)
 {
-    otError               error = OT_ERROR_NONE;
+    otError error = OT_ERROR_NONE;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx   = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION((ctx != NULL), error = OT_ERROR_INVALID_ARGS);
 
@@ -365,9 +368,9 @@ exit:
 
 otError otPlatCryptoSha256Deinit(otCryptoContext *aContext)
 {
-    otError               error = OT_ERROR_NONE;
+    otError error = OT_ERROR_NONE;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx   = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION((ctx != NULL), error = OT_ERROR_INVALID_ARGS);
     otEXPECT_ACTION((sl_sec_man_hash_deinit(ctx) == PSA_SUCCESS), error = OT_ERROR_FAILED);
@@ -378,9 +381,9 @@ exit:
 
 otError otPlatCryptoSha256Start(otCryptoContext *aContext)
 {
-    otError               error = OT_ERROR_NONE;
+    otError error = OT_ERROR_NONE;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx   = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION((ctx != NULL), error = OT_ERROR_INVALID_ARGS);
     otEXPECT_ACTION((sl_sec_man_hash_start(ctx, PSA_ALG_SHA_256) == PSA_SUCCESS), error = OT_ERROR_FAILED);
@@ -391,9 +394,9 @@ exit:
 
 otError otPlatCryptoSha256Update(otCryptoContext *aContext, const void *aBuf, uint16_t aBufLength)
 {
-    otError               error = OT_ERROR_NONE;
+    otError error = OT_ERROR_NONE;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx   = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION(((ctx != NULL) && (aBuf != NULL)), error = OT_ERROR_INVALID_ARGS);
     otEXPECT_ACTION((sl_sec_man_hash_update(ctx, (uint8_t *)aBuf, aBufLength) == PSA_SUCCESS), error = OT_ERROR_FAILED);
@@ -404,10 +407,10 @@ exit:
 
 otError otPlatCryptoSha256Finish(otCryptoContext *aContext, uint8_t *aHash, uint16_t aHashSize)
 {
-    otError               error       = OT_ERROR_NONE;
-    size_t                aHashLength = 0;
+    otError error       = OT_ERROR_NONE;
+    size_t  aHashLength = 0;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx         = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION(((ctx != NULL) && (aHash != NULL)), error = OT_ERROR_INVALID_ARGS);
     otEXPECT_ACTION((sl_sec_man_hash_finish(ctx, aHash, aHashSize, &aHashLength) == PSA_SUCCESS),

@@ -35,8 +35,8 @@
 #ifndef __BOARD_CONFIG_H__
 #define __BOARD_CONFIG_H__
 
-#if     (!defined(RADIO_CONFIG_SUBGHZ_SUPPORT) || !RADIO_CONFIG_SUBGHZ_SUPPORT)
-#define RADIO_CONFIG_2P4GHZ_OQPSK_SUPPORT	1  /// Enable OQPSK modulation in 2.4GHz band
+#if (!defined(RADIO_CONFIG_SUBGHZ_SUPPORT) || !RADIO_CONFIG_SUBGHZ_SUPPORT)
+#define RADIO_CONFIG_2P4GHZ_OQPSK_SUPPORT 1 /// Enable OQPSK modulation in 2.4GHz band
 #endif
 
 #ifndef RADIO_CONFIG_DEBUG_COUNTERS_SUPPORT
@@ -44,7 +44,7 @@
 #endif
 
 #ifndef RADIO_CONFIG_DMP_SUPPORT
-#define RADIO_CONFIG_DMP_SUPPORT 0            /// Set to 1 to enable Dynamic Multi-Protocol support in radio.c
+#define RADIO_CONFIG_DMP_SUPPORT 0 /// Set to 1 to enable Dynamic Multi-Protocol support in radio.c
 #endif
 
 #endif // __BOARD_CONFIG_H__
