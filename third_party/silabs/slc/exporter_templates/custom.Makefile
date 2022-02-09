@@ -11,7 +11,7 @@
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 # include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/includes.cmake)
-
+include(silabs-mbedtls.cmake)
 {# TODO: Parse efr32mgXX from C_FlAGS #}
 add_library(openthread-efr32)
 
