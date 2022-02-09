@@ -49,7 +49,7 @@ if(NOT EFR32_PLATFORM IN_LIST EFR32_PLATFORM_VALUES)
     message(FATAL_ERROR "Please select a supported platform: ${EFR32_PLATFORM_VALUES}")
 endif()
 
-set(OT_PLATFORM_LIB "openthread-${EFR32_PLATFORM}")
+set(OT_PLATFORM_LIB "openthread-efr32")
 
 set(OT_PLATFORM "external" CACHE STRING "disable example platforms" FORCE)
 set(OT_BUILTIN_MBEDTLS_MANAGEMENT OFF CACHE BOOL "disable builtin mbedtls management" FORCE)
@@ -80,5 +80,6 @@ target_include_directories(ot-config INTERFACE
 )
 
 add_subdirectory(examples)
+add_subdirectory(build/${EFR32_PLATFORM}/slc)
 add_subdirectory(src)
 add_subdirectory(third_party)

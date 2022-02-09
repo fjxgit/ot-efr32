@@ -27,4 +27,4 @@
 #
 
 add_subdirectory(jlink)
-add_subdirectory(silabs)
+# add_subdirectory(silabs)
