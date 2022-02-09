@@ -93,6 +93,7 @@ build()
     local generated_project_path=${builddir}/slc
     local sdk_dir=${repo_dir}/third_party/silabs/gecko_sdk/
 
+    # TODO: This will change once IOTREQ-4050 is completed
     run_slc -v 1 generate \
         --export-templates=${repo_dir}/third_party/silabs/slc/exporter_templates \
         --sdk=${sdk_dir} \
@@ -102,8 +103,11 @@ build()
         --no-copy \
         --export-destination=${generated_project_path} \
         --with ${board}
-    mv ${generated_project_path}/ot-cli-ftd.Makefile ${generated_project_path}/efr32.cmake
-    exit
+
+    # TODO: Remove this when slc supports generic jinja template generation
+    mv ${generated_project_path}/ot-cli-ftd.Makefile ${generated_project_path}/CMakeLists.txt
+    mv ${generated_project_path}/ot-cli-ftd.project.mak ${generated_project_path}/silabs-mbedtls.cmake
+
     cmake -GNinja -DOT_COMPILE_WARNING_AS_ERROR=ON "$@" "${repo_dir}"
 
     if [[ -n ${OT_CMAKE_NINJA_TARGET[*]} ]]; then
@@ -179,9 +183,9 @@ main()
             ;;
         efr32mg12 | efr32mg13 | efr32mg21)
             OT_CMAKE_NINJA_TARGET=("ot-rcp" "ot-cli-ftd" "ot-cli-mtd" "ot-ncp-ftd" "ot-ncp-mtd")
-            if [ "${skip_silabs_apps}" = false ]; then
-                OT_CMAKE_NINJA_TARGET+=("sleepy-demo-ftd" "sleepy-demo-mtd")
-            fi
+            # if [ "${skip_silabs_apps}" = false ]; then
+            #     OT_CMAKE_NINJA_TARGET+=("sleepy-demo-ftd" "sleepy-demo-mtd")
+            # fi
             ;;
     esac
 
