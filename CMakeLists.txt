@@ -74,6 +74,7 @@ target_include_directories(ot-config INTERFACE
 )
 
 add_subdirectory(examples)
-add_subdirectory(build/${EFR32_PLATFORM}/slc)
+add_subdirectory(build/${EFR32_PLATFORM}/slc/platform)
+add_subdirectory(build/${EFR32_PLATFORM}/slc/mbedtls)
 add_subdirectory(src)
 add_subdirectory(third_party)

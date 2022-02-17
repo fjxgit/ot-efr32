@@ -43,6 +43,17 @@ target_compile_definitions(silabs-mbedtls
         ${OT_PLATFORM_DEFINES}
 )
 
+{%- set linker_flags = EXT_LD_FLAGS + EXT_DEBUG_LD_FLAGS %}
+{%- if linker_flags %}
+target_link_options(openthread-efr32
+{%- for flag in linker_flags %}
+{#- Replace SDK_PATH with SILABS_GSDK_DIR #}$(SDK_PATH)
+{%- set flag = flag | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
+    {{flag}}
+{%- endfor %}
+)
+{%- endif %}
+
 target_link_libraries(silabs-mbedtls
     PRIVATE
         ot-config
@@ -52,22 +63,19 @@ target_include_directories(silabs-mbedtls
     PUBLIC
         autogen
         config
+        ${PROJECT_SOURCE_DIR}/src/src
 {%- for include in C_CXX_INCLUDES %}
-{%- if ('util/third_party/crypto' in include) %}
+{%- if ('util/third_party/crypto' in include) or ('platform' in include) %}
+
+{#- Redirect OpenThread stack sources to the ot-efr32 openthread submodule #}
+{%- set source = source | replace('${SILABS_GSDK_DIR}/util/third_party/openthread', '${PROJECT_SOURCE_DIR}/openthread') -%}
+
+{#- Redirect PAL includes to the ot-efr32 PAL #}
+{%- set include = include | replace('${SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '${PROJECT_SOURCE_DIR}/src/src') -%}
         {{include | replace('-I', '') | replace('\\', '/') | replace(' ', '\\ ') | replace('"','') | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}' | replace('{SILABS_GSDK_DIR}/util/third_party/crypto', '{SILABS_MBEDTLS_DIR}'))}}
 {%- endif %}
 {%- endfor %}
-        ${PROJECT_SOURCE_DIR}/src/${PLATFORM_LOWERCASE}/crypto
         ${SILABS_GSDK_DIR}/util/silicon_labs/silabs_core/memory_manager
-    PRIVATE
-        ${SILABS_GSDK_DIR}/platform/CMSIS/Include
-        ${SILABS_GSDK_DIR}/platform/common/inc/
-        ${SILABS_GSDK_DIR}/platform/emlib/inc
-        ${SILABS_GSDK_DIR}/platform/radio/rail_lib/common
-        ${SILABS_GSDK_DIR}/util/third_party/crypto/sl_component/se_manager/inc
-        ${SILABS_GSDK_DIR}/util/third_party/crypto/sl_component/se_manager/src
-        ${gsdk_platform_device_silicon_labs_include_dir}
-        ${PROJECT_SOURCE_DIR}/src/src
 )
 
 set(SILABS_MBEDTLS_SOURCES
@@ -77,13 +85,16 @@ set(SILABS_MBEDTLS_SOURCES
 {#- Replace SDK_PATH with SILABS_GSDK_DIR #}
 {%- set source = source | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
 
+{#- Redirect OpenThread stack sources to the ot-efr32 openthread submodule #}
+{%- set source = source | replace('${SILABS_GSDK_DIR}/util/third_party/openthread', '${PROJECT_SOURCE_DIR}/openthread') -%}
+
+{#- Redirect PAL sources to the ot-efr32 PAL #}
+{%- set source = source | replace('${SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '${PROJECT_SOURCE_DIR}/src/src') -%}
+
 {#- Shorten source paths with SILABS_MBEDTLS_DIR #}
 {%- set source = source | replace('{SILABS_GSDK_DIR}/util/third_party/crypto/mbedtls', '{SILABS_MBEDTLS_DIR}') -%}
-
 {#- Filter-out non-mbedtls sources #}
-{%- if '{SILABS_MBEDTLS_DIR}' in source %}
     {{source}}
-{%- endif %}
 {%- endfor %}
     ${SILABS_GSDK_DIR}/util/silicon_labs/silabs_core/memory_manager/sl_malloc.c
 )
