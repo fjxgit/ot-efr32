@@ -27,7 +27,6 @@
 #
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/includes.cmake)
 
 # Append SILABS_GSDK_INCLUDES to OT_PUBLIC_INCLUDES
 list(APPEND OT_PUBLIC_INCLUDES ${SILABS_GSDK_INCLUDES})
@@ -106,8 +105,5 @@ include(${platform_sdk_cmake})
 # ==============================================================================
 # mbedtls
 # ==============================================================================
-include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/mbedtls.cmake)
 
-list(APPEND OT_PLATFORM_DEFINES "MBEDTLS_CONFIG_FILE=\"mbedtls_config.h\"")
-list(APPEND OT_PLATFORM_DEFINES "MBEDTLS_PSA_CRYPTO_CONFIG_FILE=\"psa_crypto_config.h\"")
 set(OT_PLATFORM_DEFINES ${OT_PLATFORM_DEFINES} PARENT_SCOPE)

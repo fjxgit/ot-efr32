@@ -27,8 +27,6 @@
 #
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/includes.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/imported_libs.cmake)
 
 
 # ==============================================================================
@@ -76,18 +74,6 @@ set(EFR32_CFLAGS
 # ==============================================================================
 if(NOT OT_EXTERNAL_MBEDTLS)
     message(FATAL_ERROR "OT_EXTERNAL_MBEDTLS is not set. Please include the define when running cmake\n\t-DOT_EXTERNAL_MBEDTLS=silabs-mbedtls")
-else()
-    list(APPEND OT_PLATFORM_DEFINES "MBEDTLS_CONFIG_FILE=\"mbedtls_config.h\"")
-    list(APPEND OT_PLATFORM_DEFINES "MBEDTLS_PSA_CRYPTO_CONFIG_FILE=\"psa_crypto_config.h\"")
-endif()
-set(OT_PLATFORM_DEFINES ${OT_PLATFORM_DEFINES} PARENT_SCOPE)
-
-if(PLATFORM_LOWERCASE MATCHES "^efr32mg2\\d*")
-    list(APPEND OT_PUBLIC_INCLUDES
-        "${SILABS_GSDK_DIR}/util/third_party/crypto/sl_component/se_manager/inc"
-        "${SILABS_GSDK_DIR}/util/third_party/crypto/sl_component/se_manager/src"
-    )
-    set(OT_PUBLIC_INCLUDES ${OT_PUBLIC_INCLUDES} PARENT_SCOPE)
 endif()
 
 # ==============================================================================
