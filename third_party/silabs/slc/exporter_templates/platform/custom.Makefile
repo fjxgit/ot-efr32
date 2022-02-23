@@ -29,9 +29,6 @@ set(slc_gen_dir ${PROJECT_BINARY_DIR}/slc)
 
 
 target_include_directories(ot-config INTERFACE
-    autogen
-    config
-    ${PROJECT_SOURCE_DIR}/src/src
 {%- for include in C_CXX_INCLUDES %}
 
 {%- set include = include | replace('-I', '') | replace('\\', '/') | replace(' ', '\\ ') | replace('\"', '') -%}
@@ -64,12 +61,12 @@ target_sources(openthread-efr32
 {#- Redirect OpenThread stack sources to the ot-efr32 openthread submodule #}
 {%- set source = source | replace('${SILABS_GSDK_DIR}/util/third_party/openthread', '${PROJECT_SOURCE_DIR}/openthread') -%}
 
+{#- Only take PAL sources #}
+{%- if ('platform-abstraction'in source) -%}
+
 {#- Redirect PAL sources to the ot-efr32 PAL #}
 {%- set source = source | replace('${SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '${PROJECT_SOURCE_DIR}/src/src') -%}
-{#- #}
-{#- #}
-{#- Ignore crypto sources #}
-{%- if ('util/third_party/crypto' not in source) and ('coprocessor' not in source) and ('${PROJECT_SOURCE_DIR}/openthread' not in source) %}
+
 {%- if source.endswith('.c') or source.endswith('.cpp') or source.endswith('.h') or source.endswith('.hpp') or source.endswith('.s') %}
         {{source}}
 {%- endif %}
@@ -102,6 +99,7 @@ target_link_libraries(openthread-efr32
         {{lib_name | replace('\\', '/') | replace(' ', '\\ ') | replace('"','')}}
 {%- endif %}
 {%- endfor %}
+        silabs-efr32-sdk
     PRIVATE
         -T${LD_FILE}
         -Wl,--gc-sections

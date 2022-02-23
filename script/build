@@ -107,6 +107,7 @@ build()
 
         # TODO: Remove this when slc supports generic jinja template generation
         mv ${generated_project_path}/platform/ot-efr32.Makefile ${generated_project_path}/platform/CMakeLists.txt
+        mv ${generated_project_path}/platform/ot-efr32.project.mak ${generated_project_path}/platform/silabs-efr32-sdk.cmake
 
         run_slc -v 1 generate \
             --export-templates=${repo_dir}/third_party/silabs/slc/exporter_templates/mbedtls \
