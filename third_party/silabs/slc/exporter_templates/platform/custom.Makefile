@@ -10,6 +10,7 @@
 ####################################################################
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
+include(silabs-efr32-sdk.cmake)
 
 # ==============================================================================
 # Platform library
@@ -93,10 +94,13 @@ target_compile_definitions(ot-config INTERFACE
 set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/linkerfile.ld")
 target_link_libraries(openthread-efr32
     PUBLIC
-{%- for source in SYS_LIBS+USER_LIBS %}
+{%- for lib_name in SYS_LIBS+USER_LIBS %}
 {#- Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%- set source = source | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') %}
-        {{source | replace('\\', '/') | replace(' ', '\\ ') | replace('"','')}}
+{%- set lib_name = lib_name | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') %}
+{#- Ignore GSDK static libs. These will be added below #}
+{%- if 'SILABS_GSDK_DIR' not in lib_name %}
+        {{lib_name | replace('\\', '/') | replace(' ', '\\ ') | replace('"','')}}
+{%- endif %}
 {%- endfor %}
     PRIVATE
         -T${LD_FILE}
@@ -124,4 +128,38 @@ target_link_options(openthread-efr32
     {{flag}}
 {%- endfor %}
 )
-{%- endif %}
+{%- endif %} {# linker_flags #}
+
+{%- set lib_list = SYS_LIBS + USER_LIBS %}
+{%- if lib_list %}
+# ==============================================================================
+# Static libraries from GSDK
+# ==============================================================================
+{# Generate a list of GSDK libs #}
+set(GSDK_LIBS
+{%- for lib_name in lib_list -%}
+{#-     Replace SDK_PATH with SILABS_GSDK_DIR #}
+{%-     set lib_name = lib_name | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
+{%-     set lib_name = lib_name | replace('\\', '/') | replace(' ', '\\ ') | replace('"','') -%}
+{%-     if 'SILABS_GSDK_DIR' in lib_name %}
+    {{lib_name}}
+{%-     endif %}
+{%- endfor %} {# lib_name in lib_list #}
+)
+
+foreach(lib_file ${GSDK_LIBS})
+    # Parse lib name, stripping .a extension
+    get_filename_component(lib_name ${lib_file} NAME_WE)
+    set(imported_lib_name "silabs-${lib_name}")
+
+    # Add as an IMPORTED lib
+    add_library(${imported_lib_name} STATIC IMPORTED)
+    set_target_properties(${imported_lib_name}
+        PROPERTIES
+            IMPORTED_LOCATION "${lib_file}"
+            IMPORTED_LINK_INTERFACE_LIBRARIES silabs-efr32-sdk
+    )
+    target_link_libraries(openthread-efr32 PUBLIC ${imported_lib_name})
+endforeach()
+
+{%- endif %} {# lib_list #}
