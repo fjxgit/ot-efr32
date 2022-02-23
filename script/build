@@ -90,23 +90,36 @@ build()
     mkdir -p "${builddir}"
     cd "${builddir}"
 
-    local generated_project_path=${builddir}/slc
-    local sdk_dir=${repo_dir}/third_party/silabs/gecko_sdk/
+    if [ "${skip_generation}" = false ]; then
+        local generated_project_path=${builddir}/slc
+        local sdk_dir=${repo_dir}/third_party/silabs/gecko_sdk/
 
-    # TODO: This will change once IOTREQ-4050 is completed
-    run_slc -v 1 generate \
-        --export-templates=${repo_dir}/third_party/silabs/slc/exporter_templates \
-        --sdk=${sdk_dir} \
-        --clear-cache \
-        --project-file=${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/sample-apps/ot-cli/ot-cli-ftd.slcp \
-        --output-type=makefile \
-        --no-copy \
-        --export-destination=${generated_project_path} \
-        --with ${board}
+        # TODO: This will change once IOTREQ-4050 is completed
+        run_slc -v 1 generate \
+            --export-templates=${repo_dir}/third_party/silabs/slc/exporter_templates/platform \
+            --sdk=${sdk_dir} \
+            --clear-cache \
+            --project-file=${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp \
+            --output-type=makefile \
+            --no-copy \
+            --export-destination=${generated_project_path}/platform \
+            --with ${board}
 
-    # TODO: Remove this when slc supports generic jinja template generation
-    mv ${generated_project_path}/ot-cli-ftd.Makefile ${generated_project_path}/CMakeLists.txt
-    mv ${generated_project_path}/ot-cli-ftd.project.mak ${generated_project_path}/silabs-mbedtls.cmake
+        # TODO: Remove this when slc supports generic jinja template generation
+        mv ${generated_project_path}/platform/ot-efr32.Makefile ${generated_project_path}/platform/CMakeLists.txt
+
+        run_slc -v 1 generate \
+            --export-templates=${repo_dir}/third_party/silabs/slc/exporter_templates/mbedtls \
+            --sdk=${sdk_dir} \
+            --clear-cache \
+            --project-file=${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/sample-apps/ot-efr32/mbedtls.slcp \
+            --output-type=makefile \
+            --no-copy \
+            --export-destination=${generated_project_path}/mbedtls \
+            --with ${board}
+
+        mv ${generated_project_path}/mbedtls/ot-efr32-mbedtls.Makefile ${generated_project_path}/mbedtls/CMakeLists.txt
+    fi
 
     cmake -GNinja -DOT_COMPILE_WARNING_AS_ERROR=ON "$@" "${repo_dir}"
 
@@ -137,12 +150,18 @@ main()
     local usage="usage: $0 [-h] [--skip-silabs-apps] <efr32 platform> -DBOARD=<brdXXXXy> [-D<OT_XXXX=ON> -D<OT_YYYY=OFF>]"
 
     local skip_silabs_apps=false
+    skip_generation=false
     # Parse flags
     optspec=":h-:"
     while getopts "$optspec" optchar; do
         case "${optchar}" in
             -)
                 case "${OPTARG}" in
+                    skip-generation)
+                        printf '\n\nSkipping SLC generation...\n\n' >&2
+                        skip_generation=true
+                        shift 1
+                        ;;
                     skip-silabs-apps)
                         printf '\n\nSkipping silabs example apps...\n\n' >&2
                         skip_silabs_apps=true
@@ -182,7 +201,8 @@ main()
             OT_CMAKE_NINJA_TARGET=("ot-rcp")
             ;;
         efr32mg12 | efr32mg13 | efr32mg21)
-            OT_CMAKE_NINJA_TARGET=("ot-rcp" "ot-cli-ftd" "ot-cli-mtd" "ot-ncp-ftd" "ot-ncp-mtd")
+            OT_CMAKE_NINJA_TARGET=("ot-cli-ftd")
+            # OT_CMAKE_NINJA_TARGET=("ot-rcp" "ot-cli-ftd" "ot-cli-mtd" "ot-ncp-ftd" "ot-ncp-mtd")
             # if [ "${skip_silabs_apps}" = false ]; then
             #     OT_CMAKE_NINJA_TARGET+=("sleepy-demo-ftd" "sleepy-demo-mtd")
             # fi
