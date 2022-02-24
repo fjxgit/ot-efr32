@@ -16,7 +16,7 @@ include(silabs-efr32-sdk.cmake)
 # Platform library
 # ==============================================================================
 add_library(openthread-efr32
-    # $<TARGET_OBJECTS:openthread-platform-utils>
+    $<TARGET_OBJECTS:openthread-platform-utils>
 )
 
 set_target_properties(openthread-efr32
