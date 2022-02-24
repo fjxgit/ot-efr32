@@ -8,6 +8,7 @@
 #                                                                  #
 # place in /Users/matran/repos/sl/uc_cli_mac0014605/uc_cli_downloads/0.7.14/slc_cli/bin/slc-cli/slc-cli.app/Contents/Eclipse/developer/exporter_templates/arm_gcc                                                                 #
 ####################################################################
+{% from 'macros.jinja' import prepare_path %}
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 
@@ -35,18 +36,9 @@ target_include_directories(ot-config INTERFACE
     config
     ${PROJECT_SOURCE_DIR}/src/src
 {%- for include in C_CXX_INCLUDES %}
-
-{%- set include = include | replace('-I', '') | replace('\\', '/') | replace(' ', '\\ ') | replace('\"', '') -%}
-
-{#- Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%- set include = include | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
-
-{#- Redirect PAL includes to the ot-efr32 PAL #}
-{%- set include = include | replace('{SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '{PROJECT_SOURCE_DIR}/src/src') -%}
-
-{%- if ('sample-apps' not in include) %}
-    {{include}}
-{%- endif %}
+    {%- if ('sample-apps' not in include) %}
+    {{ prepare_path(include) | replace('-I', '') | replace('\"', '') }}
+    {%- endif %}
 {%- endfor %}
 )
 
@@ -58,36 +50,35 @@ target_include_directories(silabs-efr32-sdk
 target_sources(silabs-efr32-sdk
     PRIVATE
 {%- for source in (ALL_SOURCES | sort) %}
-{%- set source = source | replace('\\', '/') | replace(' ', '\\ ') -%}
+    {%- set source = prepare_path(source) -%}
 
-{#- Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%- set source = source | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
-
-{#- Redirect OpenThread stack sources to the ot-efr32 openthread submodule #}
-{%- set source = source | replace('${SILABS_GSDK_DIR}/util/third_party/openthread', '${PROJECT_SOURCE_DIR}/openthread') -%}
-
-{#- Redirect PAL sources to the ot-efr32 PAL #}
-{%- set source = source | replace('${SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '${PROJECT_SOURCE_DIR}/src/src') -%}
-{#- #}
-{#- #}
-{#- Ignore crypto sources #}
-{%- if ('util/third_party/crypto/mbedtls' not in source) and ('${PROJECT_SOURCE_DIR}/src/src' not in source) and ('coprocessor' not in source) and ('${PROJECT_SOURCE_DIR}/openthread' not in source) %}
-{%- if source.endswith('.c') or source.endswith('.cpp') or source.endswith('.h') or source.endswith('.hpp') or source.endswith('.s') %}
+    {#- Ignore crypto sources #}
+    {%- if ('util/third_party/crypto/mbedtls' not in source) and ('${PROJECT_SOURCE_DIR}/src/src' not in source) and ('coprocessor' not in source) and ('${PROJECT_SOURCE_DIR}/openthread' not in source) %}
+        {%- if source.endswith('.c') or source.endswith('.cpp') or source.endswith('.h') or source.endswith('.hpp') %}
         {{source}}
-{%- endif %}
-{%- endif %}
+        {%- endif %}
+    {%- endif %}
 {%- endfor %}
 )
 
+{% for source in (ALL_SOURCES | sort) %}
+    {%- set source = prepare_path(source) -%}
+
+    {#- Ignore crypto sources #}
+    {%- if ('util/third_party/crypto/mbedtls' not in source) and ('${PROJECT_SOURCE_DIR}/src/src' not in source) and ('coprocessor' not in source) and ('${PROJECT_SOURCE_DIR}/openthread' not in source) %}
+        {%- if source.endswith('.s') or source.endswith('.S') %}
+target_sources(silabs-efr32-sdk PRIVATE {{source}})
+set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
+        {%- endif %}
+    {%- endif %}
+{%- endfor %}
 
 target_link_libraries(silabs-efr32-sdk
     PUBLIC
         silabs-mbedtls
     PRIVATE
 {%- for source in SYS_LIBS+USER_LIBS %}
-{#- Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%- set source = source | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') %}
-        {{source | replace('\\', '/') | replace(' ', '\\ ') | replace('"','')}}
+        {{prepare_path(source)}}
 {%- endfor %}
         -Wl,--gc-sections
         -Wl,-Map=silabs-efr32-sdk.map
