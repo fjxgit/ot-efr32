@@ -25,6 +25,7 @@
 #  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #  POSSIBILITY OF SUCH DAMAGE.
 #
+{% from 'macros.jinja' import prepare_path %}
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 
@@ -47,9 +48,7 @@ target_compile_definitions(silabs-mbedtls
 {%- if linker_flags %}
 target_link_options(openthread-efr32
 {%- for flag in linker_flags %}
-{#- Replace SDK_PATH with SILABS_GSDK_DIR #}$(SDK_PATH)
-{%- set flag = flag | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
-    {{flag}}
+    {{ prepare_path(flag) }}
 {%- endfor %}
 )
 {%- endif %}
@@ -59,38 +58,25 @@ target_link_libraries(silabs-mbedtls
         ot-config
 )
 
+{%- if C_CXX_INCLUDES %}
 target_include_directories(silabs-mbedtls
     PRIVATE
 {%- for include in C_CXX_INCLUDES %}
 {%- if ('util/third_party/crypto' in include) or ('platform' in include) %}
-
-{#- Redirect OpenThread stack sources to the ot-efr32 openthread submodule #}
-{%- set source = source | replace('${SILABS_GSDK_DIR}/util/third_party/openthread', '${PROJECT_SOURCE_DIR}/openthread') -%}
-
-{#- Redirect PAL includes to the ot-efr32 PAL #}
-{%- set include = include | replace('${SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '${PROJECT_SOURCE_DIR}/src/src') %}
-        {{include | replace('-I', '') | replace('\\', '/') | replace(' ', '\\ ') | replace('"','') | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}' | replace('{SILABS_GSDK_DIR}/util/third_party/crypto', '{SILABS_MBEDTLS_DIR}'))}}
+        {{ prepare_path(include) | replace('-I', '') | replace('\"', '') }}
 {%- endif %}
 {%- endfor %}
 )
+{%- endif %}
 
 set(SILABS_MBEDTLS_SOURCES
 {%- for source in (ALL_SOURCES | sort) %}
-{%- set source = source | replace('\\', '/') | replace(' ', '\\ ') -%}
+    {%- set source = prepare_path(source) -%}
 
-{#- Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%- set source = source | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
-
-{#- Redirect OpenThread stack sources to the ot-efr32 openthread submodule #}
-{%- set source = source | replace('${SILABS_GSDK_DIR}/util/third_party/openthread', '${PROJECT_SOURCE_DIR}/openthread') -%}
-
-{#- Redirect PAL sources to the ot-efr32 PAL #}
-{%- set source = source | replace('${SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '${PROJECT_SOURCE_DIR}/src/src') -%}
-
-{#- Shorten source paths with SILABS_MBEDTLS_DIR #}
-{%- set source = source | replace('{SILABS_GSDK_DIR}/util/third_party/crypto/mbedtls', '{SILABS_MBEDTLS_DIR}') -%}
-{#- Filter-out non-mbedtls sources #}
+    {#- Filter-out non-mbedtls sources #}
+    {%- if 'SILABS_MBEDTLS_DIR' in source %}
     {{source}}
+    {%- endif %}
 {%- endfor %}
     ${SILABS_GSDK_DIR}/util/silicon_labs/silabs_core/memory_manager/sl_malloc.c
 )
