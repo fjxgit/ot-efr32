@@ -32,37 +32,6 @@ include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 # ==============================================================================
 # Common sources and includes
 # ==============================================================================
-set(EFR32_COMMON_SOURCES
-    src/alarm.c
-    src/diag.c
-    src/entropy.c
-    src/fem-control.c
-    src/flash.c
-    src/ieee802154mac.h
-    src/logging.c
-    src/mbedtls_config.h
-    src/memory.c
-    src/misc.c
-    src/openthread-core-efr32-config-check.h
-    src/openthread-core-efr32-config.h
-    src/platform-band.h
-    src/platform-efr32.h
-    src/radio.c
-    src/rail_config.h
-    src/startup-gcc.c
-    src/system.c
-    src/uart.c
-)
-
-set(EFR32_INCLUDES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/${EFR32_PLATFORM}/crypto
-    ${CMAKE_CURRENT_SOURCE_DIR}/${EFR32_PLATFORM}/${BOARD_LOWERCASE}
-    ${SILABS_GSDK_INCLUDES}
-    ${PROJECT_SOURCE_DIR}/openthread/examples/platforms
-    ${PROJECT_SOURCE_DIR}/src/core
-)
-
 set(EFR32_CFLAGS
     -Wno-sign-compare
     -Wno-unused-parameter
@@ -75,22 +44,3 @@ set(EFR32_CFLAGS
 if(NOT OT_EXTERNAL_MBEDTLS)
     message(FATAL_ERROR "OT_EXTERNAL_MBEDTLS is not set. Please include the define when running cmake\n\t-DOT_EXTERNAL_MBEDTLS=silabs-mbedtls")
 endif()
-
-# ==============================================================================
-# General variables
-# ==============================================================================
-
-# ==============================================================================
-# Platform targets
-# ==============================================================================
-set(EFR32_COMMON_3RD_LIBS
-    jlinkrtt
-    ${OT_MBEDTLS}
-)
-
-
-list(APPEND OT_PUBLIC_INCLUDES ${EFR32_INCLUDES})
-set(OT_PUBLIC_INCLUDES ${OT_PUBLIC_INCLUDES} PARENT_SCOPE)
-
-target_include_directories(ot-config INTERFACE ${OT_PUBLIC_INCLUDES})
-target_compile_definitions(ot-config INTERFACE ${OT_PLATFORM_DEFINES})

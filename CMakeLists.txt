@@ -67,11 +67,9 @@ target_compile_options(ot-config INTERFACE
     -Wno-pedantic
 )
 
-target_include_directories(ot-config INTERFACE
-    ${PROJECT_SOURCE_DIR}/src/src
-    ${PROJECT_SOURCE_DIR}/src/${EFR32_PLATFORM}
-    ${PROJECT_SOURCE_DIR}/src/${EFR32_PLATFORM}/crypto
-)
+# target_include_directories(ot-config INTERFACE
+#     ${PROJECT_SOURCE_DIR}/src/src
+# )
 
 add_subdirectory(examples)
 add_subdirectory(build/${EFR32_PLATFORM}/slc/platform)
