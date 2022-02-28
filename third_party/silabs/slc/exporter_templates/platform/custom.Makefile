@@ -8,6 +8,7 @@
 #                                                                  #
 # place in /Users/matran/repos/sl/uc_cli_mac0014605/uc_cli_downloads/0.7.14/slc_cli/bin/slc-cli/slc-cli.app/Contents/Eclipse/developer/exporter_templates/arm_gcc                                                                 #
 ####################################################################
+{% from 'macros.jinja' import prepare_path %}
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 include(silabs-efr32-sdk.cmake)
@@ -25,23 +26,11 @@ set_target_properties(openthread-efr32
         CXX_STANDARD 11
 )
 
-set(slc_gen_dir ${PROJECT_BINARY_DIR}/slc)
-
-
 target_include_directories(ot-config INTERFACE
 {%- for include in C_CXX_INCLUDES %}
-
-{%- set include = include | replace('-I', '') | replace('\\', '/') | replace(' ', '\\ ') | replace('\"', '') -%}
-
-{#- Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%- set include = include | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
-
-{#- Redirect PAL includes to the ot-efr32 PAL #}
-{%- set include = include | replace('{SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '{PROJECT_SOURCE_DIR}/src/src') -%}
-
-{%- if ('sample-apps' not in include) %}
-    {{include}}
-{%- endif %}
+    {%- if ('sample-apps' not in include) %}
+    {{ prepare_path(include) | replace('-I', '') | replace('\"', '') }}
+    {%- endif %}
 {%- endfor %}
 )
 
@@ -53,26 +42,28 @@ target_include_directories(openthread-efr32
 target_sources(openthread-efr32
     PRIVATE
 {%- for source in (ALL_SOURCES | sort) %}
-{%- set source = source | replace('\\', '/') | replace(' ', '\\ ') -%}
+    {%- set source = prepare_path(source) -%}
 
-{#- Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%- set source = source | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
-
-{#- Redirect OpenThread stack sources to the ot-efr32 openthread submodule #}
-{%- set source = source | replace('${SILABS_GSDK_DIR}/util/third_party/openthread', '${PROJECT_SOURCE_DIR}/openthread') -%}
-
-{#- Only take PAL sources #}
-{%- if ('platform-abstraction'in source) -%}
-
-{#- Redirect PAL sources to the ot-efr32 PAL #}
-{%- set source = source | replace('${SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '${PROJECT_SOURCE_DIR}/src/src') -%}
-
-{%- if source.endswith('.c') or source.endswith('.cpp') or source.endswith('.h') or source.endswith('.hpp') or source.endswith('.s') %}
+    {#- Only take PAL sources #}
+    {%- if ('{PROJECT_SOURCE_DIR}/src/src' in source) -%}
+        {%- if source.endswith('.c') or source.endswith('.cpp') or source.endswith('.h') or source.endswith('.hpp') %}
         {{source}}
-{%- endif %}
-{%- endif %}
+        {%- endif %}
+    {%- endif %}
 {%- endfor %}
 )
+
+{%- for source in (ALL_SOURCES | sort) %}
+    {%- set source = prepare_path(source) -%}
+
+    {#- Only take PAL sources #}
+    {%- if ('${PROJECT_SOURCE_DIR}/src/src' in source) -%}
+        {%- if source.endswith('.s') or source.endswith('.S') %}
+target_sources(openthread-efr32 PRIVATE {{source}})
+set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
+        {%- endif %}
+    {%- endif %}
+{%- endfor %}
 
 target_compile_definitions(ot-config INTERFACE
 {#- TODO: Figure out why I can't do
@@ -92,18 +83,19 @@ set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/linkerfile.ld")
 target_link_libraries(openthread-efr32
     PUBLIC
 {%- for lib_name in SYS_LIBS+USER_LIBS %}
-{#- Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%- set lib_name = lib_name | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') %}
-{#- Ignore GSDK static libs. These will be added below #}
-{%- if 'SILABS_GSDK_DIR' not in lib_name %}
+    {%- set lib_name = prepare_path(lib_name) -%}
+
+    {#- Ignore GSDK static libs. These will be added below #}
+    {%- if 'SILABS_GSDK_DIR' not in lib_name %}
         {{lib_name | replace('\\', '/') | replace(' ', '\\ ') | replace('"','')}}
-{%- endif %}
+    {%- endif %}
 {%- endfor %}
         silabs-efr32-sdk
     PRIVATE
         -T${LD_FILE}
         -Wl,--gc-sections
         -Wl,-Map=openthread-efr32.map
+        jlinkrtt
         ot-config
 )
 
@@ -114,16 +106,14 @@ target_compile_options(openthread-efr32
     {{flag}}
 {%- endfor %}
 )
-{%- endif %}
+{%- endif %} {# compile_options #}
 
 
 {%- set linker_flags = EXT_LD_FLAGS + EXT_DEBUG_LD_FLAGS %}
 {%- if linker_flags %}
 target_link_options(openthread-efr32
 {%- for flag in linker_flags %}
-{#- Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%- set flag = flag | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
-    {{flag}}
+    {{ prepare_path(flag) }}
 {%- endfor %}
 )
 {%- endif %} {# linker_flags #}
@@ -136,13 +126,13 @@ target_link_options(openthread-efr32
 {# Generate a list of GSDK libs #}
 set(GSDK_LIBS
 {%- for lib_name in lib_list -%}
-{#-     Replace SDK_PATH with SILABS_GSDK_DIR #}
-{%-     set lib_name = lib_name | replace('(SDK_PATH)', '{SILABS_GSDK_DIR}') -%}
-{%-     set lib_name = lib_name | replace('\\', '/') | replace(' ', '\\ ') | replace('"','') -%}
-{%-     if 'SILABS_GSDK_DIR' in lib_name %}
+    {#- Replace SDK_PATH with SILABS_GSDK_DIR #}
+    {%- set lib_name = prepare_path(lib_name) -%}
+
+    {%- if ('SILABS_GSDK_DIR' in lib_name) and ('jlink' not in lib_name) %}
     {{lib_name}}
-{%-     endif %}
-{%- endfor %} {# lib_name in lib_list #}
+    {%- endif %}
+{%- endfor %}
 )
 
 foreach(lib_file ${GSDK_LIBS})
