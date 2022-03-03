@@ -120,7 +120,7 @@ build()
             --with ${board}
 
         mv ${generated_project_path}/mbedtls/ot-efr32-mbedtls.Makefile ${generated_project_path}/mbedtls/CMakeLists.txt
-        rm -rf ${generated_project_path}/mbedtls/autogen ${generated_project_path}/config
+        rm -rf ${generated_project_path}/mbedtls/{autogen,config}
     fi
 
     cmake -GNinja -DOT_COMPILE_WARNING_AS_ERROR=ON "$@" "${repo_dir}"
