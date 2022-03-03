@@ -37,7 +37,7 @@
 #include <openthread/platform/crypto.h>
 #include "utils/code_utils.h"
 
-#if OPENTHREAD_CONFIG_PLATFORM_KEY_REFERENCES_ENABLE
+#if OPENTHREAD_CONFIG_CRYPTO_LIB == OPENTHREAD_CONFIG_CRYPTO_LIB_PSA
 
 // Helper function to convert otCryptoKeyType to psa_key_type_t
 static psa_key_type_t getPsaKeyType(otCryptoKeyType aKeyType)
@@ -132,17 +132,9 @@ static psa_key_persistence_t getPsaKeyPersistence(otCryptoKeyStorage aKeyPersist
     return aPsaKeyPersistence;
 }
 
-otError otPlatCryptoInit(void)
+void otPlatCryptoInit(void)
 {
-    otError             error = OT_ERROR_NONE;
-    sl_sec_man_status_t status;
-
-    status = sl_sec_man_init();
-
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
-
-exit:
-    return error;
+    (void) sl_sec_man_init();
 }
 
 otError otPlatCryptoImportKey(otCryptoKeyRef *     aKeyId,
@@ -159,7 +151,7 @@ otError otPlatCryptoImportKey(otCryptoKeyRef *     aKeyId,
     status = sl_sec_man_import_key(aKeyId, getPsaKeyType(aKeyType), getPsaAlgorithm(aKeyAlgorithm),
                                    getPsaKeyUsage(aKeyUsage), getPsaKeyPersistence(aKeyPersistence), aKey, aKeyLen);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -172,7 +164,7 @@ otError otPlatCryptoExportKey(otCryptoKeyRef aKeyId, uint8_t *aBuffer, size_t aB
 
     status = sl_sec_man_export_key(aKeyId, aBuffer, aBufferLen, aKeyLen);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -185,7 +177,7 @@ otError otPlatCryptoDestroyKey(otCryptoKeyRef aKeyId)
 
     status = sl_sec_man_destroy_key(aKeyId);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -195,7 +187,7 @@ bool otPlatCryptoHasKey(otCryptoKeyRef aKeyRef)
 {
     psa_key_attributes_t aAttr = PSA_KEY_ATTRIBUTES_INIT;
 
-    return (sl_sec_man_get_key_attributes(aKeyRef, &aAttr) == PSA_SUCCESS);
+    return (sl_sec_man_get_key_attributes(aKeyRef, &aAttr) == SL_SECURITY_MAN_SUCCESS);
 }
 
 // AES  Implementation
@@ -226,12 +218,11 @@ otError otPlatCryptoAesEncrypt(otCryptoContext *aContext, const uint8_t *aInput,
     sl_sec_man_status_t status;
     otCryptoKeyRef *    mKeyRef = NULL;
 
-    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aOutput != NULL) && (aInput != NULL)),
-                    error = OT_ERROR_INVALID_ARGS);
+    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aOutput != NULL) && (aInput != NULL)), error = OT_ERROR_INVALID_ARGS);
     mKeyRef = (otCryptoKeyRef *)aContext->mContext;
     status  = sl_sec_man_aes_encrypt(*mKeyRef, PSA_ALG_ECB_NO_PADDING, aInput, aOutput);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -247,7 +238,7 @@ otError otPlatCryptoAesFree(otCryptoContext *aContext)
 // HMAC implementations
 otError otPlatCryptoHmacSha256Init(otCryptoContext *aContext)
 {
-    otError              error         = OT_ERROR_NONE;
+    otError error = OT_ERROR_NONE;
     psa_mac_operation_t *mMacOperation = (psa_mac_operation_t *)aContext->mContext;
     *mMacOperation                     = psa_mac_operation_init();
     return error;
@@ -255,13 +246,13 @@ otError otPlatCryptoHmacSha256Init(otCryptoContext *aContext)
 
 otError otPlatCryptoHmacSha256Deinit(otCryptoContext *aContext)
 {
-    otError              error         = OT_ERROR_NONE;
+    otError error = OT_ERROR_NONE;
     psa_mac_operation_t *mMacOperation = (psa_mac_operation_t *)aContext->mContext;
     sl_sec_man_status_t  status;
 
     status = sl_sec_man_hmac_deinit(mMacOperation);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -275,7 +266,7 @@ otError otPlatCryptoHmacSha256Start(otCryptoContext *aContext, const otCryptoKey
 
     status = sl_sec_man_hmac_start(mMacOperation, aKey->mKeyRef);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -289,7 +280,7 @@ otError otPlatCryptoHmacSha256Update(otCryptoContext *aContext, const void *aBuf
 
     status = sl_sec_man_hmac_update(mMacOperation, (const uint8_t *)aBuf, (size_t)aBufLength);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -303,7 +294,7 @@ otError otPlatCryptoHmacSha256Finish(otCryptoContext *aContext, uint8_t *aBuf, s
 
     status = sl_sec_man_hmac_finish(mMacOperation, aBuf, aBufLength);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -311,21 +302,20 @@ exit:
 
 // HKDF platform implementations
 // As the HKDF does not actually use mbedTLS APIs but uses HMAC module, this feature is not implemented.
-otError otPlatCryptoHkdfExpand(otCryptoContext *aContext,
-                               const uint8_t *  aInfo,
-                               uint16_t         aInfoLength,
-                               uint8_t *        aOutputKey,
-                               uint16_t         aOutputKeyLength)
+otError otPlatCryptoHkdfExpand(otCryptoContext * aContext,
+                               const uint8_t *   aInfo,
+                               uint16_t          aInfoLength,
+                               uint8_t *         aOutputKey,
+                               uint16_t          aOutputKeyLength)
 {
     otError             error = OT_ERROR_NONE;
     sl_sec_man_status_t status;
 
-    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aInfo != NULL) && (aOutputKey != NULL)),
-                    error = OT_ERROR_INVALID_ARGS);
+    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aInfo != NULL) && (aOutputKey != NULL)), error = OT_ERROR_INVALID_ARGS);
 
     status = sl_sec_man_key_derivation_expand(aContext->mContext, aInfo, aInfoLength, aOutputKey, aOutputKeyLength);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -339,13 +329,12 @@ otError otPlatCryptoHkdfExtract(otCryptoContext *  aContext,
     otError             error = OT_ERROR_NONE;
     sl_sec_man_status_t status;
 
-    otEXPECT_ACTION(
-        ((aContext != NULL) && (aContext->mContext != NULL) && (aKey != NULL) && (aSalt != NULL) && (aSaltLength != 0)),
-        error = OT_ERROR_INVALID_ARGS);
+    otEXPECT_ACTION(((aContext != NULL) && (aContext->mContext != NULL) && (aKey != NULL) && (aSalt != NULL) && (aSaltLength != 0)),
+                    error = OT_ERROR_INVALID_ARGS);
 
     status = sl_sec_man_key_derivation_extract(aContext->mContext, PSA_ALG_SHA_256, aKey->mKeyRef, aSalt, aSaltLength);
 
-    otEXPECT_ACTION((status == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((status == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -354,9 +343,9 @@ exit:
 // SHA256 platform implementations
 otError otPlatCryptoSha256Init(otCryptoContext *aContext)
 {
-    otError error = OT_ERROR_NONE;
+    otError               error = OT_ERROR_NONE;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx   = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION((ctx != NULL), error = OT_ERROR_INVALID_ARGS);
 
@@ -368,12 +357,12 @@ exit:
 
 otError otPlatCryptoSha256Deinit(otCryptoContext *aContext)
 {
-    otError error = OT_ERROR_NONE;
+    otError               error = OT_ERROR_NONE;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx   = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION((ctx != NULL), error = OT_ERROR_INVALID_ARGS);
-    otEXPECT_ACTION((sl_sec_man_hash_deinit(ctx) == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((sl_sec_man_hash_deinit(ctx) == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -381,12 +370,12 @@ exit:
 
 otError otPlatCryptoSha256Start(otCryptoContext *aContext)
 {
-    otError error = OT_ERROR_NONE;
+    otError               error = OT_ERROR_NONE;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx   = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION((ctx != NULL), error = OT_ERROR_INVALID_ARGS);
-    otEXPECT_ACTION((sl_sec_man_hash_start(ctx, PSA_ALG_SHA_256) == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((sl_sec_man_hash_start(ctx, PSA_ALG_SHA_256) == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -394,12 +383,12 @@ exit:
 
 otError otPlatCryptoSha256Update(otCryptoContext *aContext, const void *aBuf, uint16_t aBufLength)
 {
-    otError error = OT_ERROR_NONE;
+    otError               error = OT_ERROR_NONE;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx   = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION(((ctx != NULL) && (aBuf != NULL)), error = OT_ERROR_INVALID_ARGS);
-    otEXPECT_ACTION((sl_sec_man_hash_update(ctx, (uint8_t *)aBuf, aBufLength) == PSA_SUCCESS), error = OT_ERROR_FAILED);
+    otEXPECT_ACTION((sl_sec_man_hash_update(ctx, (uint8_t *)aBuf, aBufLength) == SL_SECURITY_MAN_SUCCESS), error = OT_ERROR_FAILED);
 
 exit:
     return error;
@@ -407,13 +396,13 @@ exit:
 
 otError otPlatCryptoSha256Finish(otCryptoContext *aContext, uint8_t *aHash, uint16_t aHashSize)
 {
-    otError error       = OT_ERROR_NONE;
-    size_t  aHashLength = 0;
+    otError               error       = OT_ERROR_NONE;
+    size_t                aHashLength = 0;
     otEXPECT_ACTION((aContext != NULL), error = OT_ERROR_INVALID_ARGS);
-    psa_hash_operation_t *ctx = (psa_hash_operation_t *)aContext->mContext;
+    psa_hash_operation_t *ctx         = (psa_hash_operation_t *)aContext->mContext;
 
     otEXPECT_ACTION(((ctx != NULL) && (aHash != NULL)), error = OT_ERROR_INVALID_ARGS);
-    otEXPECT_ACTION((sl_sec_man_hash_finish(ctx, aHash, aHashSize, &aHashLength) == PSA_SUCCESS),
+    otEXPECT_ACTION((sl_sec_man_hash_finish(ctx, aHash, aHashSize, &aHashLength) == SL_SECURITY_MAN_SUCCESS),
                     error = OT_ERROR_FAILED);
 
 exit:

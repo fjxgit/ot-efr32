@@ -38,13 +38,13 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#include "platform-efr32.h"
+#include "common/code_utils.hpp"
 #include <openthread/cli.h>
 #include <openthread/config.h>
 #include <openthread/platform/alarm-milli.h>
 #include <openthread/platform/diag.h>
 #include <openthread/platform/radio.h>
-#include "common/code_utils.hpp"
+#include "platform-efr32.h"
 
 #if OPENTHREAD_CONFIG_DIAG_ENABLE
 
