@@ -71,7 +71,7 @@ run_slc()
 OT_CMAKE_NINJA_TARGET=${OT_CMAKE_NINJA_TARGET:-}
 
 readonly OT_OPTIONS=(
-    "-DCMAKE_BUILD_TYPE=MinSizeRel"
+    "-DCMAKE_BUILD_TYPE=Debug"
     "-DOT_DIAGNOSTIC=ON"
     "-DOT_EXTERNAL_HEAP=ON"
     "-DOT_SLAAC=ON"
@@ -120,6 +120,7 @@ build()
             --with ${board}
 
         mv ${generated_project_path}/mbedtls/ot-efr32-mbedtls.Makefile ${generated_project_path}/mbedtls/CMakeLists.txt
+        rm -rf ${generated_project_path}/mbedtls/autogen ${generated_project_path}/config
     fi
 
     cmake -GNinja -DOT_COMPILE_WARNING_AS_ERROR=ON "$@" "${repo_dir}"
@@ -201,7 +202,7 @@ main()
         efr32mg1)
             OT_CMAKE_NINJA_TARGET=("ot-rcp")
             ;;
-        efr32mg12 | efr32mg13 | efr32mg21)
+        efr32mg12 | efr32mg13 | efr32mg21 | efr32mg24)
             OT_CMAKE_NINJA_TARGET=("ot-cli-ftd")
             # OT_CMAKE_NINJA_TARGET=("ot-rcp" "ot-cli-ftd" "ot-cli-mtd" "ot-ncp-ftd" "ot-ncp-mtd")
             # if [ "${skip_silabs_apps}" = false ]; then
