@@ -38,17 +38,6 @@ if(OT_PACKAGE_VERSION STREQUAL "")
 endif()
 message(STATUS "Package Version: ${OT_PACKAGE_VERSION}")
 
-set(EFR32_PLATFORM_VALUES
-    "efr32mg1"
-    "efr32mg12"
-    "efr32mg13"
-    "efr32mg21"
-)
-set_property(CACHE EFR32_PLATFORM PROPERTY STRINGS ${EFR32_PLATFORM_VALUES})
-if(NOT EFR32_PLATFORM IN_LIST EFR32_PLATFORM_VALUES)
-    message(FATAL_ERROR "Please select a supported platform: ${EFR32_PLATFORM_VALUES}")
-endif()
-
 set(OT_PLATFORM_LIB "openthread-efr32")
 
 set(OT_PLATFORM "external" CACHE STRING "disable example platforms" FORCE)
