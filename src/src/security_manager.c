@@ -71,10 +71,10 @@ sl_sec_man_status_t sl_sec_man_init(void)
 
     if (!is_security_manager_initialised)
     {
-        psa_status_t status             = psa_crypto_init();
-        retStatus                       = SEC_MAN_GET_STATUS(status);
+        psa_status_t status = psa_crypto_init();
+        retStatus           = SEC_MAN_GET_STATUS(status);
 
-        if(retStatus == SL_SECURITY_MAN_SUCCESS)
+        if (retStatus == SL_SECURITY_MAN_SUCCESS)
         {
             is_security_manager_initialised = true;
         }
@@ -502,8 +502,7 @@ exit:
     return status;
 }
 
-sl_sec_man_status_t sl_sec_man_get_random( uint8_t               *sl_psa_output_buffer, 
-                                           uint16_t              sl_psa_output_size)
+sl_sec_man_status_t sl_sec_man_get_random(uint8_t *sl_psa_output_buffer, uint16_t sl_psa_output_size)
 {
     sl_sec_man_status_t status = SL_SECURITY_MAN_SUCCESS;
 
