@@ -28,6 +28,13 @@
 #
 
 set -euxo pipefail
+
+cleanup() {
+    restore_templates
+}
+
+trap cleanup EXIT
+
 # ==============================================================================
 # Bash definitions
 if [[ -n ${BASH_SOURCE[0]} ]]; then
@@ -83,6 +90,42 @@ die()
     exit 1
 }
 
+inject_templates()
+{
+    local custom_templates_dir=$1
+    local slc_dir=$(dirname $(which "${slc_cmd}"))
+    local slc_version=$(head -n 1 "${slc_dir}"/latest_version)
+
+    local slc_exporter_templates_dir="${slc_dir}"/uc_cli_downloads/"${slc_version}"/slc_cli/bin/slc-cli/developer/exporter_templates/arm_gcc
+
+    # Make a backup of existing templates
+    echo "Backing up ${slc_exporter_templates_dir}"
+    cp -R \
+        "${slc_exporter_templates_dir}" \
+        "${slc_exporter_templates_dir}_backup"
+
+    # Inject templates
+    echo "Injecting custom exporter templates"
+    cp ${custom_templates_dir}/custom.Makefile ${slc_exporter_templates_dir}/arm_gcc.Makefile
+    cp ${custom_templates_dir}/custom.project.mak ${slc_exporter_templates_dir}/arm_gcc.project.mak
+    cp ${custom_templates_dir}/macros.jinja ${slc_exporter_templates_dir}/
+}
+
+restore_templates()
+{
+    local slc_dir=$(dirname $(which "${slc_cmd}"))
+    local slc_version=$(head -n 1 "${slc_dir}"/latest_version)
+
+    local slc_exporter_templates_dir="${slc_dir}"/uc_cli_downloads/"${slc_version}"/slc_cli/bin/slc-cli/developer/exporter_templates/arm_gcc
+
+    echo "Restoring original slc exporter templates"
+    rm -rf "${slc_exporter_templates_dir}"
+    cp -R \
+        "${slc_exporter_templates_dir}_backup" \
+        "${slc_exporter_templates_dir}"
+
+}
+
 build()
 {
     builddir="${OT_CMAKE_BUILD_DIR:-$repo_dir/build/${platform}}"
@@ -95,8 +138,8 @@ build()
         local sdk_dir=${repo_dir}/third_party/silabs/gecko_sdk/
 
         # TODO: This will change once IOTREQ-4050 is completed
+        inject_templates ${repo_dir}/third_party/silabs/slc/exporter_templates/platform
         run_slc -v 1 generate \
-            --export-templates=${repo_dir}/third_party/silabs/slc/exporter_templates/platform \
             --sdk=${sdk_dir} \
             --clear-cache \
             --project-file=${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp \
@@ -104,13 +147,14 @@ build()
             --no-copy \
             --export-destination=${generated_project_path}/platform \
             --with ${board}
+        restore_templates
 
         # TODO: Remove this when slc supports generic jinja template generation
         mv ${generated_project_path}/platform/ot-efr32.Makefile ${generated_project_path}/platform/CMakeLists.txt
         mv ${generated_project_path}/platform/ot-efr32.project.mak ${generated_project_path}/platform/silabs-efr32-sdk.cmake
 
+        inject_templates ${repo_dir}/third_party/silabs/slc/exporter_templates/mbedtls
         run_slc -v 1 generate \
-            --export-templates=${repo_dir}/third_party/silabs/slc/exporter_templates/mbedtls \
             --sdk=${sdk_dir} \
             --clear-cache \
             --project-file=${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/sample-apps/ot-efr32/mbedtls.slcp \
@@ -118,6 +162,7 @@ build()
             --no-copy \
             --export-destination=${generated_project_path}/mbedtls \
             --with ${board}
+        restore_templates
 
         mv ${generated_project_path}/mbedtls/ot-efr32-mbedtls.Makefile ${generated_project_path}/mbedtls/CMakeLists.txt
         rm -rf ${generated_project_path}/mbedtls/{autogen,config}
