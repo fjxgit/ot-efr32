@@ -90,10 +90,11 @@ target_link_libraries(openthread-efr32
         {{lib_name | replace('\\', '/') | replace(' ', '\\ ') | replace('"','')}}
     {%- endif %}
 {%- endfor %}
-        silabs-efr32-sdk
+
     PRIVATE
         -T${LD_FILE}
         -Wl,--gc-sections
+        silabs-efr32-sdk
         -Wl,-Map=openthread-efr32.map
         jlinkrtt
         ot-config
@@ -101,7 +102,7 @@ target_link_libraries(openthread-efr32
 
 {%- set compile_options = EXT_CFLAGS + EXT_CXX_FLAGS %}
 {%- if compile_options %}
-target_compile_options(openthread-efr32
+target_compile_options(openthread-efr32 PRIVATE
 {%- for flag in compile_options %}
     {{flag}}
 {%- endfor %}
@@ -111,7 +112,7 @@ target_compile_options(openthread-efr32
 
 {%- set linker_flags = EXT_LD_FLAGS + EXT_DEBUG_LD_FLAGS %}
 {%- if linker_flags %}
-target_link_options(openthread-efr32
+target_link_options(openthread-efr32 PRIVATE
 {%- for flag in linker_flags %}
     {{ prepare_path(flag) }}
 {%- endfor %}
@@ -183,17 +184,85 @@ endforeach()
 {%- endfor %}
 
 # ==============================================================================
-#  EXT_CFLAGS + EXT_CXX_FLAGS
+#  EXT_CFLAGS
 # ==============================================================================
-{%- set compile_options = EXT_CFLAGS + EXT_CXX_FLAGS %}
-{%- for flag in compile_options %}
+{%- for flag in EXT_CFLAGS %}
 #    {{flag}}
 {%- endfor %}
 
 # ==============================================================================
-#  EXT_CFLAGS + EXT_CXX_FLAGS
+#  EXT_DEBUG_CFLAGS
 # ==============================================================================
-{%- set linker_flags = EXT_LD_FLAGS + EXT_DEBUG_LD_FLAGS %}
-{%- for flag in linker_flags %}
-#    {{ prepare_path(flag) }}
+{%- for flag in EXT_DEBUG_CFLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_RELEASE_CFLAGS
+# ==============================================================================
+{%- for flag in EXT_RELEASE_CFLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_CXX_FLAGS
+# ==============================================================================
+{%- for flag in EXT_CXX_FLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_DEBUG_CXX_FLAGS
+# ==============================================================================
+{%- for flag in EXT_DEBUG_CXX_FLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_RELEASE_CXX_FLAGS
+# ==============================================================================
+{%- for flag in EXT_RELEASE_CXX_FLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_ASM_FLAGS
+# ==============================================================================
+{%- for flag in EXT_ASM_FLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_DEBUG_ASM_FLAGS
+# ==============================================================================
+{%- for flag in EXT_DEBUG_ASM_FLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_RELEASE_ASM_FLAGS
+# ==============================================================================
+{%- for flag in EXT_RELEASE_ASM_FLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_LD_FLAGS
+# ==============================================================================
+{%- for flag in EXT_LD_FLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_DEBUG_LD_FLAGS
+# ==============================================================================
+{%- for flag in EXT_DEBUG_LD_FLAGS %}
+#    {{flag}}
+{%- endfor %}
+
+# ==============================================================================
+#  EXT_RELEASE_LD_FLAGS
+# ==============================================================================
+{%- for flag in EXT_RELEASE_LD_FLAGS %}
+#    {{flag}}
 {%- endfor %}

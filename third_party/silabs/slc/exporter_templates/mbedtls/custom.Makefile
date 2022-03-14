@@ -46,7 +46,7 @@ target_compile_definitions(silabs-mbedtls
 
 {%- set linker_flags = EXT_LD_FLAGS + EXT_DEBUG_LD_FLAGS %}
 {%- if linker_flags %}
-target_link_options(openthread-efr32
+target_link_options(silabs-mbedtls PRIVATE
 {%- for flag in linker_flags %}
     {{ prepare_path(flag) }}
 {%- endfor %}
