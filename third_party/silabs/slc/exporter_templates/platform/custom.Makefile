@@ -80,6 +80,8 @@ target_compile_definitions(ot-config INTERFACE
 )
 
 set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/linkerfile.ld")
+set(silabs-efr32-sdk_location $<TARGET_FILE:silabs-efr32-sdk>)
+
 target_link_libraries(openthread-efr32
     PUBLIC
 {%- for lib_name in SYS_LIBS+USER_LIBS %}
@@ -94,7 +96,7 @@ target_link_libraries(openthread-efr32
     PRIVATE
         -T${LD_FILE}
         -Wl,--gc-sections
-        silabs-efr32-sdk
+        -Wl,--whole-archive ${silabs-efr32-sdk_location} -Wl,--no-whole-archive
         -Wl,-Map=openthread-efr32.map
         jlinkrtt
         ot-config

@@ -78,7 +78,6 @@ set(SILABS_MBEDTLS_SOURCES
     {{source}}
     {%- endif %}
 {%- endfor %}
-    ${SILABS_GSDK_DIR}/util/silicon_labs/silabs_core/memory_manager/sl_malloc.c
 )
 
 target_sources(silabs-mbedtls PRIVATE ${SILABS_MBEDTLS_SOURCES})
