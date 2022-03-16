@@ -11,3 +11,50 @@
     {%- set path = path | replace('${SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', '${PROJECT_SOURCE_DIR}/src/src') -%}
 {{path}}
 {%- endmacro %}
+
+{%- macro compile_flags() %}
+    {#- --- C flags --- #}
+    {%- if EXT_CFLAGS %}
+    $<$<COMPILE_LANG_AND_ID:C,GNU>:
+    {%- for flag in EXT_CFLAGS %}
+        {{flag}}
+    {%- endfor %}
+    >  {#- Close the genex #}
+    {%- endif -%} {# EXT_CFLAGS #}
+
+    {#- --- CXX flags --- #}
+    {%- if EXT_CXXFLAGS %}
+    $<$<COMPILE_LANG_AND_ID:CXX,GNU>:
+    {%- for flag in EXT_CXXFLAGS %}
+        {{flag}}
+    {%- endfor %}
+    >  {#- Close the genex #}
+    {%- endif %} {# EXT_CXXFLAGS #}
+{%- endmacro %}
+
+{%- macro linker_flags() -%}
+    {#- --- Default flags --- #}
+    {%- if EXT_LD_FLAGS %}
+        {%- for flag in EXT_LD_FLAGS %}
+    {{ prepare_path(flag) }}
+        {%- endfor %}
+    {%- endif %}
+
+    {#- --- Debug build --- #}
+    {%- if EXT_DEBUG_LD_FLAGS %}
+    $<$<CONFIG:DEBUG>:
+        {%- for flag in EXT_DEBUG_LD_FLAGS %}
+        {{ prepare_path(flag) }}
+        {%- endfor %}
+    >
+    {%- endif %}
+
+    {#- --- Release build --- #}
+    {%- if EXT_RELEASE_LD_FLAGS %}
+    $<$<CONFIG:RELEASE>:
+        {%- for flag in EXT_RELEASE_LD_FLAGS %}
+        {{ prepare_path(flag) }}
+        {%- endfor %}
+    >
+    {%- endif %}
+{%- endmacro %}

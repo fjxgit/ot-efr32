@@ -6,9 +6,8 @@
 # This file will be used to generate a .cmake file that will       #
 # replace all existing CMake files for the GSDK.                   #
 #                                                                  #
-# place in /Users/matran/repos/sl/uc_cli_mac0014605/uc_cli_downloads/0.7.14/slc_cli/bin/slc-cli/slc-cli.app/Contents/Eclipse/developer/exporter_templates/arm_gcc                                                                 #
 ####################################################################
-{% from 'macros.jinja' import prepare_path %}
+{% from 'macros.jinja' import prepare_path,compile_flags,linker_flags with context -%}
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 include(silabs-efr32-sdk.cmake)
@@ -66,13 +65,6 @@ set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
 {%- endfor %}
 
 target_compile_definitions(ot-config INTERFACE
-{#- TODO: Figure out why I can't do
-
-{%- for key, value in C_CXX_DEFINES %}
-    {{key}}={{value}}
-{%- endfor %}
-
-#}
 {%- for define in C_CXX_DEFINES %}
         {{define}}={{C_CXX_DEFINES[define]}}
 {%- endfor %}
@@ -81,7 +73,6 @@ target_compile_definitions(ot-config INTERFACE
 
 set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/linkerfile.ld")
 set(silabs-efr32-sdk_location $<TARGET_FILE:silabs-efr32-sdk>)
-
 target_link_libraries(openthread-efr32
     PUBLIC
 {%- for lib_name in SYS_LIBS+USER_LIBS %}
@@ -97,31 +88,23 @@ target_link_libraries(openthread-efr32
         -T${LD_FILE}
         -Wl,--gc-sections
         -Wl,--whole-archive ${silabs-efr32-sdk_location} -Wl,--no-whole-archive
-        -Wl,-Map=openthread-efr32.map
         jlinkrtt
         ot-config
 )
 
-{%- set compile_options = EXT_CFLAGS + EXT_CXX_FLAGS %}
-{%- if compile_options %}
-target_compile_options(openthread-efr32 PRIVATE
-{%- for flag in compile_options %}
-    {{flag}}
-{%- endfor %}
+{% if EXT_CFLAGS+EXT_CXX_FLAGS -%}
+target_compile_options(openthread-efr32 PRIVATE {{ compile_flags() }}
 )
 {%- endif %} {# compile_options #}
 
-
-{%- set linker_flags = EXT_LD_FLAGS + EXT_DEBUG_LD_FLAGS %}
-{%- if linker_flags %}
-target_link_options(openthread-efr32 PRIVATE
-{%- for flag in linker_flags %}
-    {{ prepare_path(flag) }}
-{%- endfor %}
+{# ========================================================================= #}
+{#- Linker Flags #}
+{%- if (EXT_LD_FLAGS + EXT_DEBUG_LD_FLAGS + EXT_RELEASE_LD_FLAGS) %}
+target_link_options(openthread-efr32 PRIVATE {{ linker_flags() }}
 )
 {%- endif %} {# linker_flags #}
 
-{%- set lib_list = SYS_LIBS + USER_LIBS %}
+{% set lib_list = SYS_LIBS + USER_LIBS %}
 {%- if lib_list %}
 # ==============================================================================
 # Static libraries from GSDK
