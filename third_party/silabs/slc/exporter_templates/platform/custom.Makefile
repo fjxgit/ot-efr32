@@ -97,6 +97,10 @@ target_compile_options(openthread-efr32 PRIVATE {{ compile_flags() }}
 )
 {%- endif %} {# compile_options #}
 
+target_compile_definitions(openthread-efr32 PRIVATE
+    RADIO_CONFIG_DEBUG_COUNTERS_SUPPORT=1
+)
+
 {# ========================================================================= #}
 {#- Linker Flags #}
 {%- if (EXT_LD_FLAGS + EXT_DEBUG_LD_FLAGS + EXT_RELEASE_LD_FLAGS) %}

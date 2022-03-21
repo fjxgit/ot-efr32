@@ -49,14 +49,20 @@ board="brdXXXXY"
 
 # shellcheck source=script/efr32-definitions
 source "$script_dir/efr32-definitions"
+source "${DOTFILES}/silabs/profiles/build.profile"
 
 # Define slc_cmd
 slc_path="${repo_dir}/third_party/silabs/slc/slc_cli/bin/slc-cli/"
 export slc_cmd
-if command -v slc-cli; then
+if command -v slc-docker; then
+    slc_cmd="slc-docker"
+    slc_dir=$(dirname $(which slc))_docker
+elif command -v slc-cli; then
     slc_cmd="slc-cli"
+    slc_dir=$(dirname $(which "${slc_cmd}"))
 elif command -v slc; then
     slc_cmd="slc"
+    slc_dir=$(dirname $(which "${slc_cmd}"))
 else
     echo "The 'slc-cli' command could not be found in your PATH."
     if ! command -v "${slc_path}/slc-cli"; then
@@ -66,6 +72,9 @@ else
         slc_cmd="${slc_path}/slc-cli"
     fi
 fi
+slc_version=$(head -n 1 "${slc_dir}"/latest_version)
+slc_exporter_templates_dir="${slc_dir}"/uc_cli_downloads/"${slc_version}"/slc_cli/bin/slc-cli/developer/exporter_templates/arm_gcc
+
 
 # Wrapper function to execute an slc command
 run_slc()
@@ -93,16 +102,12 @@ die()
 inject_templates()
 {
     local custom_templates_dir=$1
-    local slc_dir=$(dirname $(which "${slc_cmd}"))
-    local slc_version=$(head -n 1 "${slc_dir}"/latest_version)
-
-    local slc_exporter_templates_dir="${slc_dir}"/uc_cli_downloads/"${slc_version}"/slc_cli/bin/slc-cli/developer/exporter_templates/arm_gcc
 
     # Make a backup of existing templates
     echo "Backing up ${slc_exporter_templates_dir}"
     cp -R \
-        "${slc_exporter_templates_dir}" \
-        "${slc_exporter_templates_dir}_backup"
+        "${slc_exporter_templates_dir}/" \
+        "${slc_exporter_templates_dir}_backup/"
 
     # Inject templates
     echo "Injecting custom exporter templates"
@@ -113,16 +118,11 @@ inject_templates()
 
 restore_templates()
 {
-    local slc_dir=$(dirname $(which "${slc_cmd}"))
-    local slc_version=$(head -n 1 "${slc_dir}"/latest_version)
-
-    local slc_exporter_templates_dir="${slc_dir}"/uc_cli_downloads/"${slc_version}"/slc_cli/bin/slc-cli/developer/exporter_templates/arm_gcc
-
     echo "Restoring original slc exporter templates"
     rm -rf "${slc_exporter_templates_dir}"
     cp -R \
-        "${slc_exporter_templates_dir}_backup" \
-        "${slc_exporter_templates_dir}"
+        "${slc_exporter_templates_dir}_backup/" \
+        "${slc_exporter_templates_dir}/"
 
 }
 
