@@ -145,8 +145,9 @@ void efr32LogDeinit(void);
  *
  * A call to this function should be made after RAIL has been
  * initialized and a valid handle is available. On platforms that
- * don't support different CCA modes, a call to this function will
- * do nothing.
+ * don't support different CCA modes, a call to this function with
+ * non-Default CCA mode (i.e. with any value except
+ * RAIL_IEEE802154_CCA_MODE_RSSI) will return a failure.
  *
  * @param[in] aMode Mode of CCA operation.
  * @return RAIL Status code indicating success of the function call.
