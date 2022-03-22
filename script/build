@@ -127,6 +127,8 @@ build()
         local generated_project_path=${builddir}/slc
         local sdk_dir=${repo_dir}/third_party/silabs/gecko_sdk/
 
+        run_slc -v 1 signature trust --sdk ${sdk_dir}
+
         # TODO: This will change once IOTREQ-4050 is completed
         inject_templates ${repo_dir}/third_party/silabs/slc/exporter_templates/platform
         run_slc -v 1 generate \
