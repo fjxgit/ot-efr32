@@ -29,11 +29,6 @@
 
 set -euxo pipefail
 
-cleanup() {
-    restore_templates
-}
-
-trap cleanup EXIT
 
 # ==============================================================================
 # Bash definitions
@@ -49,15 +44,11 @@ board="brdXXXXY"
 
 # shellcheck source=script/efr32-definitions
 source "$script_dir/efr32-definitions"
-source "${DOTFILES}/silabs/profiles/build.profile"
 
 # Define slc_cmd
 slc_path="${repo_dir}/third_party/silabs/slc/slc_cli/bin/slc-cli/"
 export slc_cmd
-if command -v slc-docker; then
-    slc_cmd="slc-docker"
-    slc_dir=$(dirname $(which slc))_docker
-elif command -v slc-cli; then
+if command -v slc-cli; then
     slc_cmd="slc-cli"
     slc_dir=$(dirname $(which "${slc_cmd}"))
 elif command -v slc; then
@@ -123,7 +114,6 @@ restore_templates()
     cp -R \
         "${slc_exporter_templates_dir}_backup/" \
         "${slc_exporter_templates_dir}/"
-
 }
 
 build()
@@ -191,6 +181,12 @@ create_srec()
 
     find "$1" -type f "${executable_flag[@]}" -not -name '*.*' -exec arm-none-eabi-objcopy -O srec {} {}.s37 \; -exec ls -alh {} {}.s37 \;
 }
+
+cleanup() {
+    restore_templates
+}
+
+trap cleanup EXIT
 
 main()
 {
