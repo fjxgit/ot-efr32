@@ -153,13 +153,6 @@
 #define RADIO_BCAST_PANID                    (0xFFFF)
 #define INVALID_VALUE                        (0xFF)
 
-#if defined(_SILICON_LABS_32B_SERIES_1)
-#define DEVICE_CAPABILITY_MCU_EN        (1)
-#else
-#define DEVICE_CAPABILITY_MCU_EN        (DEVINFO->SWCAPA1 & _DEVINFO_SWCAPA1_RFMCUEN_MASK)
-#endif
-
-
 // Energy Scan
 typedef enum
 {
@@ -300,26 +293,16 @@ static otExtAddress  sExtAddress[RADIO_EXT_ADDR_COUNT];
 /*
  * This API reads the UserData page on the given EFR device.
  */
-static int readUserData(void *buffer, uint16_t index, int len, bool changeByteOrder)
+static int readUserData(void *buffer, uint16_t index, int len)
 {
-    uint8_t *readLocation   = (uint8_t *)USERDATA_BASE + index;
-    uint8_t *writeLocation  = (uint8_t *)buffer;
+    long unsigned int readLocation = USERDATA_BASE + index;
 
     // Sanity check to verify if the ouput buffer is valid and the index and len are valid.
     // If invalid, change the len to -1 and return.
-    otEXPECT_ACTION((writeLocation != NULL) && ((readLocation + len) <= (uint8_t *)USERDATA_END), len = -1);
+    otEXPECT_ACTION((buffer != NULL) && ((readLocation + len) <= USERDATA_END), len = -1);
 
     // Copy the contents of flash into output buffer.
-    
-    for (int idx = 0; idx < len; idx++)
-    {
-        if (changeByteOrder) {
-            writeLocation[idx] = readLocation[(len - 1) - idx];
-        }
-        else {
-            writeLocation[idx] = readLocation[idx];
-        }
-    }
+    memcpy(buffer, (uint8_t *)readLocation, len);
 
 exit:
     // Return len, len was changed to -1 to indicate failure.
@@ -788,14 +771,11 @@ exit:
 
 //------------------------------------------------------------------------------
 // Radio Initialization
+
 static RAIL_Handle_t efr32RailInit(efr32CommonConfig *aCommonConfig)
 {
     RAIL_Status_t status;
     RAIL_Handle_t handle;
-
-#if !OPENTHREAD_RADIO
-    assert(DEVICE_CAPABILITY_MCU_EN);
-#endif    
 
     handle = RAIL_Init(&aCommonConfig->mRailConfig, NULL);
     assert(handle != NULL);
@@ -1074,7 +1054,7 @@ void otPlatRadioGetIeeeEui64(otInstance *aInstance, uint8_t *aIeeeEui64)
     uint8_t nullEui[] = { 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU };
 
     // Read the Custom EUI and compare it to nullEui
-    if ((readUserData(aIeeeEui64, USERDATA_MFG_CUSTOM_EUI_64, OT_EXT_ADDRESS_SIZE, true) == -1) || 
+    if ((readUserData(aIeeeEui64, USERDATA_MFG_CUSTOM_EUI_64, OT_EXT_ADDRESS_SIZE) == -1) || 
         (memcmp(aIeeeEui64, nullEui, OT_EXT_ADDRESS_SIZE) == 0))
 #endif
     {
@@ -1149,13 +1129,6 @@ void otPlatRadioSetShortAddress(otInstance *aInstance, uint16_t aAddress)
 
     status = RAIL_IEEE802154_SetShortAddress(gRailHandle, aAddress, panIndex);
     assert(status == RAIL_STATUS_NO_ERROR);
-}
-
-otRadioState otPlatRadioGetState(otInstance *aInstance)
-{
-    OT_UNUSED_VARIABLE(aInstance);
-
-    return sState;
 }
 
 bool otPlatRadioIsEnabled(otInstance *aInstance)
@@ -1858,9 +1831,8 @@ static bool writeIeee802154EnhancedAck(RAIL_Handle_t aRailHandle)
         return true; // Nothing to read, which means generating an immediate ACK is also pointless
     }
 
-    receivedFrame.mPsdu     = receivedPsdu + PHY_HEADER_SIZE;
-    receivedFrame.mLength   = intialPktReadBytes - PHY_HEADER_SIZE;
-    enhAckFrame.mPsdu       = enhAckPsdu + PHY_HEADER_SIZE;
+    receivedFrame.mPsdu = receivedPsdu + PHY_HEADER_SIZE;
+    enhAckFrame.mPsdu = enhAckPsdu + PHY_HEADER_SIZE;
 
     if (! otMacFrameIsVersion2015(&receivedFrame))
     {
@@ -2564,6 +2536,7 @@ static void processNextRxPacket(otInstance *aInstance)
     RAIL_RxPacketDetails_t packetDetails;
     RAIL_Status_t          status;
     uint16_t               length;
+    uint16_t               receiveChannel;
     bool                   rxProcessDone = false;
     uint8_t                iid = 0;
 
@@ -2591,7 +2564,8 @@ static void processNextRxPacket(otInstance *aInstance)
     sReceiveFrame.mLength = length;
 
     uint8_t *macFcfPointer = sReceiveFrame.mPsdu;
-    sReceiveFrame.mChannel = packetDetails.channel;
+    RAIL_GetChannel(gRailHandle, &receiveChannel);
+    sReceiveFrame.mChannel = receiveChannel;
 
     // Check the reserved bits in the MAC header, then clear them.
 
