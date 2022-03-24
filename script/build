@@ -134,7 +134,7 @@ build()
         run_slc -v 1 generate \
             --sdk=${sdk_dir} \
             --clear-cache \
-            --project-file=${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp \
+            --project-file=${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp \
             --output-type=makefile \
             --no-copy \
             --export-destination=${generated_project_path}/platform \
@@ -145,18 +145,20 @@ build()
         mv ${generated_project_path}/platform/ot-efr32.Makefile ${generated_project_path}/platform/CMakeLists.txt
         mv ${generated_project_path}/platform/ot-efr32.project.mak ${generated_project_path}/platform/silabs-efr32-sdk.cmake
 
+        # TODO: I think when IOTREQ-4050 is finished, we won't need to generate twice
+        # TODO: Instead, I believe we should be able to pass in any number of jinja files all at once
         inject_templates ${repo_dir}/third_party/silabs/slc/exporter_templates/mbedtls
         run_slc -v 1 generate \
             --sdk=${sdk_dir} \
             --clear-cache \
-            --project-file=${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/sample-apps/ot-efr32/mbedtls.slcp \
+            --project-file=${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp \
             --output-type=makefile \
             --no-copy \
             --export-destination=${generated_project_path}/mbedtls \
             --with ${board}
         restore_templates
 
-        mv ${generated_project_path}/mbedtls/ot-efr32-mbedtls.Makefile ${generated_project_path}/mbedtls/CMakeLists.txt
+        mv ${generated_project_path}/mbedtls/ot-efr32.Makefile ${generated_project_path}/mbedtls/CMakeLists.txt
         rm -rf ${generated_project_path}/mbedtls/{autogen,config}
     fi
 
