@@ -39,6 +39,7 @@ endif()
 message(STATUS "Package Version: ${OT_PACKAGE_VERSION}")
 
 set(OT_PLATFORM_LIB "openthread-efr32")
+set(OT_PLATFORM_LIB_RCP openthread-efr32-rcp)
 
 set(OT_PLATFORM "external" CACHE STRING "disable example platforms" FORCE)
 set(OT_BUILTIN_MBEDTLS_MANAGEMENT OFF CACHE BOOL "disable builtin mbedtls management" FORCE)
@@ -63,5 +64,6 @@ target_compile_options(ot-config INTERFACE
 add_subdirectory(examples)
 add_subdirectory(build/${EFR32_PLATFORM}/slc/platform)
 add_subdirectory(build/${EFR32_PLATFORM}/slc/mbedtls)
+add_subdirectory(build/${EFR32_PLATFORM}/slc/rcp)
 add_subdirectory(src)
 add_subdirectory(third_party)
