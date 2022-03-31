@@ -17,7 +17,7 @@
     {%- if EXT_CFLAGS %}
     $<$<COMPILE_LANG_AND_ID:C,GNU>:
     {%- for flag in EXT_CFLAGS %}
-        {{flag}}
+        "SHELL:{{flag}}"
     {%- endfor %}
     >  {#- Close the genex #}
     {%- endif -%} {# EXT_CFLAGS #}
@@ -26,7 +26,7 @@
     {%- if EXT_CXXFLAGS %}
     $<$<COMPILE_LANG_AND_ID:CXX,GNU>:
     {%- for flag in EXT_CXXFLAGS %}
-        {{flag}}
+        "SHELL:{{flag}}"
     {%- endfor %}
     >  {#- Close the genex #}
     {%- endif %} {# EXT_CXXFLAGS #}
