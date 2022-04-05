@@ -58,3 +58,11 @@
     >
     {%- endif %}
 {%- endmacro %}
+
+{%- macro openthread_device_type(defines) -%}
+    {%- for define in defines %}
+        {%- if ( ("OPENTHREAD_RADIO" == define) or ("OPENTHREAD_FTD" == define) or ("OPENTHREAD_MTD" == define) or ("OPENTHREAD_COPROCESSOR" == define) ) %}
+        {{define}}={{C_CXX_DEFINES[define]}}
+        {%- endif %}
+    {%- endfor %}
+{%- endmacro %}

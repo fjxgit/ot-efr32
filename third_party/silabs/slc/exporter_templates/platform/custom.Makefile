@@ -7,7 +7,7 @@
 # replace all existing CMake files for the GSDK.                   #
 #                                                                  #
 ####################################################################
-{% from 'macros.jinja' import prepare_path,compile_flags,linker_flags with context -%}
+{% from 'macros.jinja' import prepare_path,compile_flags,linker_flags,openthread_device_type with context -%}
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 include(silabs-efr32-sdk.cmake)
@@ -64,12 +64,30 @@ set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
     {%- endif %}
 {%- endfor %}
 
-target_compile_definitions(ot-config INTERFACE
-{%- for define in C_CXX_DEFINES %}
+
+list(APPEND OT_PLATFORM_DEFINES
+    {%- for define in C_CXX_DEFINES %}
+        {%- if not ( ("OPENTHREAD_RADIO" == define) or ("OPENTHREAD_FTD" == define) or ("OPENTHREAD_MTD" == define) or ("OPENTHREAD_COPROCESSOR" == define) ) %}
         {{define}}={{C_CXX_DEFINES[define]}}
-{%- endfor %}
-        # ${OT_PLATFORM_DEFINES}
+        {%- endif %}
+    {%- endfor %}
 )
+set(OT_PLATFORM_DEFINES ${OT_PLATFORM_DEFINES} PARENT_SCOPE)
+
+target_compile_definitions(openthread-efr32 PUBLIC
+    ${OT_PLATFORM_DEFINES}
+    {{ openthread_device_type(C_CXX_DEFINES) }}
+)
+
+target_compile_definitions(silabs-efr32-sdk PRIVATE
+    ${OT_PLATFORM_DEFINES}
+    {{ openthread_device_type(C_CXX_DEFINES) }}
+)
+
+target_compile_definitions(ot-config INTERFACE
+    ${OT_PLATFORM_DEFINES}
+)
+
 
 set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/linkerfile.ld")
 set(silabs-efr32-sdk_location $<TARGET_FILE:silabs-efr32-sdk>)
