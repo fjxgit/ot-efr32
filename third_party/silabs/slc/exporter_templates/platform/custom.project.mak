@@ -28,8 +28,6 @@ set_target_properties(silabs-efr32-sdk
 # Includes
 # ==============================================================================
 target_include_directories(ot-config INTERFACE
-    autogen
-    config
 {%- for include in C_CXX_INCLUDES %}
     {%- if ('sample-apps' not in include) %}
     {{ prepare_path(include) | replace('-I', '') | replace('\"', '') }}
