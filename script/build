@@ -64,8 +64,8 @@ else
     fi
 fi
 slc_version=$(head -n 1 "${slc_dir}"/latest_version)
-slc_exporter_templates_dir="${slc_dir}"/uc_cli_downloads/"${slc_version}"/slc_cli/bin/slc-cli/developer/exporter_templates/arm_gcc
-
+slc_exporter_templates_dir=$(find "${slc_dir}"/uc_cli_downloads/"${slc_version}" -name 'exporter_templates')
+slc_exporter_templates_dir=$(find "${slc_exporter_templates_dir}" -name 'arm_gcc')
 
 # Wrapper function to execute an slc command
 run_slc()
@@ -99,6 +99,8 @@ inject_templates()
     cp -R \
         "${slc_exporter_templates_dir}/" \
         "${slc_exporter_templates_dir}_backup/"
+
+    [ ! -d "${slc_exporter_templates_dir}_backup/" ] && echo "ERROR: Unable to create backup of exporter templates" && exit 1
 
     # Inject templates
     echo "Injecting custom exporter templates"
