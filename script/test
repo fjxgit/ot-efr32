@@ -60,18 +60,36 @@ readonly OT_OPTIONS=(
     "-DOT_MAC_FILTER=ON"
 )
 
+# List of boards to test
+readonly BOARDS=(
+    efr32mg1 brd4151a \
+    efr32mg12 brd4161a \
+    efr32mg12 brd4166a \
+    efr32mg12 brd4170a \
+    efr32mg12 brd4304a \
+    efr32mg13 brd4168a \
+    efr32mg21 brd4180a \
+    efr32mg21 brd4180b \
+    efr32mg24 brd4186c \
+    efr32mg24 brd4187c \
+)
+
+# Sanity check to ensure each board has its platform before it.
+if [[ ! "$(( ${#BOARDS[@]} % 2 ))" -eq "0" ]]; then
+    echo "BOARDS is not properly defined."
+    # exit 1
+fi
+
 main()
 {
     export CPPFLAGS="${CPPFLAGS:-} -DNDEBUG"
-
-    for platform in $(efr32_get_platforms); do
-        for board in $(efr32_get_boards "$platform"); do
-            echo "Building [$platform -- $board]..."
-            rm -rf "$OT_BUILDDIR"
-            "$script_dir"/build "$platform" "${OT_OPTIONS[@]}" -DBOARD="$board"
-        done
+    for ((idx=0; idx<${#BOARDS[@]}; idx=idx+2)); do
+        local platform="${BOARDS[idx]}"
+        local board="${BOARDS[idx+1]}"
+        echo "Building [${platform} -- ${board}]..."
+        rm -rf "$OT_BUILDDIR"
+        "$script_dir"/build "$platform" "${OT_OPTIONS[@]}" -DBOARD="$board"
     done
-
 }
 
 main "$@"
