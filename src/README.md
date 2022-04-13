@@ -76,6 +76,7 @@ Alternatively, the [J-Link][jlink-software-pack] software pack can be used to fl
 Before building example apps, make sure to initialize all submodules. Afterward, the build can be launched using `./script/build`.
 
 # TODD: Rewrite this section
+
 To see which platforms are supported, the bash script [`<path-to-ot-efr32>/script/efr32-definitions`](../script/efr32-definitions) has been provided. Once `source`d, the functions `efr32_get_platforms` and `efr32_get_boards` can be used to get lists of available platforms and boards for those platforms
 
 **Example**

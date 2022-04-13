@@ -94,7 +94,6 @@ main()
     echo "Bootstrapping silabs"
     "$(dirname "$0")"/bootstrap_silabs
 
-
     echo "Bootstrap completed successfully."
 }
 

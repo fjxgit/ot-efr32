@@ -39,39 +39,13 @@ fi
 
 script_dir="$(dirname "$(realpath "$script_path")")"
 repo_dir="$(dirname "$script_dir")"
+sdk_dir=${repo_dir}/third_party/silabs/gecko_sdk/
 board="brdXXXXY"
 
 # shellcheck source=script/efr32-definitions
 source "$script_dir/efr32-definitions"
-
-# Define slc_cmd
-slc_path="${repo_dir}/third_party/silabs/slc/slc_cli/bin/slc-cli/"
-export slc_cmd
-if command -v slc-cli; then
-    slc_cmd="slc-cli"
-    slc_dir=$(dirname $(which "${slc_cmd}"))
-elif command -v slc; then
-    slc_cmd="slc"
-    slc_dir=$(dirname $(which "${slc_cmd}"))
-else
-    echo "The 'slc-cli' command could not be found in your PATH."
-    if ! command -v "${slc_path}/slc-cli"; then
-        echo "slc-cli has not been installed yet. Please run ./script/bootstrap"
-        exit
-    else
-        slc_cmd="${slc_path}/slc-cli"
-    fi
-fi
-slc_version=$(head -n 1 "${slc_dir}"/latest_version)
-slc_exporter_templates_dir=$(find "${slc_dir}"/uc_cli_downloads/"${slc_version}" -name 'exporter_templates')
-slc_exporter_templates_dir=$(find "${slc_exporter_templates_dir}" -name 'arm_gcc')
-
-# Wrapper function to execute an slc command
-run_slc()
-{
-    mycmd=("${slc_cmd}" ${@})
-    "${mycmd[@]}"
-}
+# shellcheck source=script/slc_cli.profile
+source "$script_dir/slc_cli.profile"
 
 # ==============================================================================
 OT_CMAKE_NINJA_TARGET=${OT_CMAKE_NINJA_TARGET:-}
@@ -89,34 +63,6 @@ die()
     exit 1
 }
 
-inject_templates()
-{
-    local custom_templates_dir=$1
-
-    # Make a backup of existing templates
-    echo "Backing up ${slc_exporter_templates_dir}"
-    cp -R \
-        "${slc_exporter_templates_dir}/" \
-        "${slc_exporter_templates_dir}_backup/"
-
-    [ ! -d "${slc_exporter_templates_dir}_backup/" ] && echo "ERROR: Unable to create backup of exporter templates" && exit 1
-
-    # Inject templates
-    echo "Injecting custom exporter templates"
-    cp ${custom_templates_dir}/custom.Makefile ${slc_exporter_templates_dir}/arm_gcc.Makefile
-    cp ${custom_templates_dir}/custom.project.mak ${slc_exporter_templates_dir}/arm_gcc.project.mak
-    cp ${custom_templates_dir}/macros.jinja ${slc_exporter_templates_dir}/
-}
-
-restore_templates()
-{
-    echo "Restoring original slc exporter templates"
-    rm -rf "${slc_exporter_templates_dir}"
-    cp -R \
-        "${slc_exporter_templates_dir}_backup/" \
-        "${slc_exporter_templates_dir}/"
-}
-
 build()
 {
     builddir="${OT_CMAKE_BUILD_DIR:-$repo_dir/build/${platform}}"
@@ -126,7 +72,6 @@ build()
 
     if [ "${skip_generation}" = false ]; then
         local generated_project_path=${builddir}/slc
-        local sdk_dir=${repo_dir}/third_party/silabs/gecko_sdk/
 
         run_slc -v 1 signature trust --sdk ${sdk_dir}
 
@@ -212,13 +157,6 @@ create_srec()
     find "$1" -type f "${executable_flag[@]}" -not -name '*.*' -exec arm-none-eabi-objcopy -O srec {} {}.s37 \; -exec ls -alh {} {}.s37 \;
 }
 
-cleanup()
-{
-    restore_templates
-}
-
-trap cleanup EXIT
-
 main()
 {
     local usage="usage: $0 [-h] [--skip-silabs-apps] <efr32 platform> -DBOARD=<brdXXXXy> [-D<OT_XXXX=ON> -D<OT_YYYY=OFF>]"
@@ -287,6 +225,9 @@ main()
     lowercase_args=$(echo $@ | tr '[:upper:]' '[:lower:]')
     board=$([[ ${lowercase_args} =~ (brd[0-9]{4}[a-z]{1}) ]] && echo ${BASH_REMATCH[1]})
     echo ${board}
+
+    # Find slc-cli installation
+    slc_init
 
     options+=("$@")
     build -DEFR32_PLATFORM="${platform}" "${options[@]}"
