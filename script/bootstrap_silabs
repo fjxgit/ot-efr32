@@ -38,64 +38,27 @@ fi
 script_dir="$(dirname "$(realpath "$script_path")")"
 repo_dir="$(dirname "$script_dir")"
 
-install_packages_apt()
+install_slc_cli()
 {
-    echo 'Installing script dependencies...'
-
-    # apt-get update and install dependencies
-    sudo apt-get update
-    sudo apt-get --no-install-recommends install -y coreutils
-
-}
-
-install_packages_opkg()
-{
-    echo 'opkg not supported currently' && false
-}
-
-install_packages_rpm()
-{
-    echo 'rpm not supported currently' && false
-}
-
-install_packages_brew()
-{
-    echo 'Installing script dependencies...'
-    brew install coreutils
-}
-
-install_packages_source()
-{
-    echo 'source not supported currently' && false
-}
-
-install_packages()
-{
-    PM=source
-    if command -v apt-get; then
-        PM=apt
-    elif command -v rpm; then
-        PM=rpm
-    elif command -v opkg; then
-        PM=opkg
-    elif command -v brew; then
-        PM=brew
+    # Install slc-cli
+    local os_type
+    if [[ $OSTYPE == "linux"* ]]; then
+        os_type="linux"
+    elif [[ $OSTYPE == "darwin"* ]]; then
+        os_type="mac"
     fi
-    install_packages_$PM
+
+    local zip_url="https://www.silabs.com/documents/login/software/slc_cli_${os_type}.zip"
+    pushd "${repo_dir}/third_party/silabs/slc"
+    local zip_path="./slc_cli.zip"
+    wget "${zip_url}" -O "${zip_path}"
+    unzip -o ${zip_path} -d $(dirname ${zip_path})
+    popd
 }
 
 main()
 {
-    install_packages
-
-    echo "Bootstrapping openthread"
-    "$(dirname "$0")"/../openthread/script/bootstrap
-
-    echo "Bootstrapping silabs"
-    "$(dirname "$0")"/bootstrap_silabs
-
-
-    echo "Bootstrap completed successfully."
+    install_slc_cli
 }
 
 main
