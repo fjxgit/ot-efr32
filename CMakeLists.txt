@@ -42,8 +42,12 @@ set(OT_PLATFORM_LIB "openthread-efr32")
 set(OT_PLATFORM_LIB_RCP openthread-efr32-rcp)
 
 set(OT_PLATFORM "external" CACHE STRING "disable example platforms" FORCE)
-set(OT_BUILTIN_MBEDTLS_MANAGEMENT OFF CACHE BOOL "disable builtin mbedtls management" FORCE)
+
+# ==============================================================================
+# mbedtls
+# ==============================================================================
 set(OT_EXTERNAL_MBEDTLS "silabs-mbedtls" CACHE STRING "use silabs mbedtls" FORCE)
+set(OT_BUILTIN_MBEDTLS_MANAGEMENT OFF CACHE BOOL "disable builtin mbedtls management" FORCE)
 set(OT_MBEDTLS ${OT_EXTERNAL_MBEDTLS})
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -57,13 +61,8 @@ target_compile_options(ot-config INTERFACE
     -Wno-pedantic
 )
 
-# target_include_directories(ot-config INTERFACE
-#     ${PROJECT_SOURCE_DIR}/src/src
-# )
-
 add_subdirectory(examples)
 add_subdirectory(build/${EFR32_PLATFORM}/slc/platform)
 add_subdirectory(build/${EFR32_PLATFORM}/slc/mbedtls)
 add_subdirectory(build/${EFR32_PLATFORM}/slc/rcp)
-add_subdirectory(src)
 add_subdirectory(third_party)

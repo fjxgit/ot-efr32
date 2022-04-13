@@ -75,12 +75,14 @@ Alternatively, the [J-Link][jlink-software-pack] software pack can be used to fl
 
 Before building example apps, make sure to initialize all submodules. Afterward, the build can be launched using `./script/build`.
 
+# TODD: Rewrite this section
 To see which platforms are supported, the bash script [`<path-to-ot-efr32>/script/efr32-definitions`](../script/efr32-definitions) has been provided. Once `source`d, the functions `efr32_get_platforms` and `efr32_get_boards` can be used to get lists of available platforms and boards for those platforms
 
 **Example**
 
 ```bash
 $ cd <path-to-ot-efr32>
+$ git submodule update --init --recursive .
 $ source ./script/efr32-definitions
 $ efr32_get_platforms
 efr32mg1 efr32mg12 efr32mg13 efr32mg21
@@ -333,6 +335,6 @@ The following toolchain has been used for testing and verification:
 
 - gcc version 7.3.1
 
-The EFR32 example has been verified with following Flex SDK/RAIL Library version:
+The EFR32 example has been verified with following Silicon Labs Gecko SDK Library version:
 
-- Flex SDK v3.1.x
+- Silicon Labs Gecko SDK v4.0.x
