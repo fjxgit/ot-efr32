@@ -27,6 +27,9 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 #
 
+# slc-cli installation dir
+[ ! -z "${SLC_INSTALL_DIR:-}" ] || SLC_INSTALL_DIR="${repo_dir}/third_party/silabs/slc"
+
 slc_cmd=""
 slc_exporter_templates_dir=""
 need_to_restore_templates=0
