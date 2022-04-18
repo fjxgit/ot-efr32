@@ -91,6 +91,7 @@ jobs:
         submodules: true
     - name: Bootstrap
       run: |
+        script/bootstrap_silabs
         cd /tmp
         sudo rm /etc/apt/sources.list.d/* && sudo apt-get update
         sudo apt-get --no-install-recommends install -y lib32z1 ninja-build
