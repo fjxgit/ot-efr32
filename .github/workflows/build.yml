@@ -98,12 +98,9 @@ jobs:
         script/bootstrap_silabs
         cd /tmp
         sudo rm /etc/apt/sources.list.d/* && sudo apt-get update
-        sudo apt-get --no-install-recommends install -y lib32z1 ninja-build
+        sudo apt-get --no-install-recommends install -y lib32z1 ninja-build cmake
         wget --tries 4 --no-check-certificate --quiet ${{ matrix.gcc_download_url }} -O gcc-arm.tar.bz2
         tar xjf gcc-arm.tar.bz2
-        # use the minimal required cmake version
-        sudo pip3 install --system -U cmake==3.10.3
-        cmake --version | grep 3.10.3
     - name: Build
       run: |
         export PATH=/tmp/${{ matrix.gcc_extract_dir }}/bin:$PATH
