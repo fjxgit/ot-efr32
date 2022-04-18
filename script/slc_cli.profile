@@ -87,6 +87,8 @@ slc_init()
         mkdir -p "${dummy_builddir}"
         cd "${dummy_builddir}"
 
+        run_slc -v 1 signature trust --sdk ${sdk_dir}
+
         # Run a dummy generation to create the template directory
         run_slc -v 1 generate \
             --sdk=${sdk_dir} \
