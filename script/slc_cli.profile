@@ -115,7 +115,8 @@ inject_templates()
     echo "Backing up ${slc_exporter_templates_dir}"
 
     pushd ${slc_exporter_templates_dir}
-    rename -f -v 's/(.*)/$1.bak/' *
+    cp arm_gcc.Makefile arm_gcc.Makefile.bak
+    cp arm_gcc.project.mak arm_gcc.project.mak.bak
 
     # Inject templates
     echo "Injecting custom exporter templates"
@@ -133,7 +134,8 @@ restore_templates()
     pushd ${slc_exporter_templates_dir}
     rm -f macros.jinja
     echo "Restoring original slc exporter templates"
-    rename -f -v 's/(.*).bak/$1/' *
+    cp arm_gcc.Makefile.bak arm_gcc.Makefile 2>/dev/null || :
+    cp arm_gcc.project.mak.bak arm_gcc.project.mak 2>/dev/null || :
     popd
 }
 
