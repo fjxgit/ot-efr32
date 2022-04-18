@@ -138,6 +138,10 @@ restore_templates()
 
 cleanup()
 {
+    if [ "$?" -eq "14" ]; then
+        echo "Please make sure Java 11 installed and the JAVA_11_HOME environment variable is set."
+    fi
+
     if [ "${need_to_restore_templates}" -eq "1" ]; then
         restore_templates
     fi

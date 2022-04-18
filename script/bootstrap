@@ -44,7 +44,7 @@ install_packages_apt()
 
     # apt-get update and install dependencies
     sudo apt-get update
-    sudo apt-get --no-install-recommends install -y coreutils
+    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre
 
 }
 
@@ -61,7 +61,7 @@ install_packages_rpm()
 install_packages_brew()
 {
     echo 'Installing script dependencies...'
-    brew install coreutils
+    brew install coreutils openjdk@11
 }
 
 install_packages_source()
