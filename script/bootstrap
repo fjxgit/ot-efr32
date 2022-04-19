@@ -38,14 +38,14 @@ fi
 script_dir="$(dirname "$(realpath "$script_path")")"
 repo_dir="$(dirname "$script_dir")"
 
+
 install_packages_apt()
 {
     echo 'Installing script dependencies...'
 
     # apt-get update and install dependencies
     sudo apt-get update
-    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre
-
+    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre python3-setuptools python3-pip git-lfs
 }
 
 install_packages_opkg()
@@ -69,6 +69,12 @@ install_packages_source()
     echo 'source not supported currently' && false
 }
 
+install_packages_pip3()
+{
+    sudo pip3 install --system -U cmake==3.22.4
+    cmake --version | grep 3.22.4
+}
+
 install_packages()
 {
     PM=source
@@ -82,6 +88,10 @@ install_packages()
         PM=brew
     fi
     install_packages_$PM
+
+    if command -v pip3; then
+        install_packages_pip3
+    fi
 }
 
 main()

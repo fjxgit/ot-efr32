@@ -89,13 +89,14 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: true
+        lfs: true
     - uses: actions/setup-java@v3
       with:
         distribution: 'temurin' # See 'Supported distributions' for available options
         java-version: '17'
     - name: Bootstrap
       run: |
-        script/bootstrap_silabs
+        script/bootstrap
         cd /tmp
         sudo rm /etc/apt/sources.list.d/* && sudo apt-get update
         sudo apt-get --no-install-recommends install -y lib32z1 ninja-build cmake
