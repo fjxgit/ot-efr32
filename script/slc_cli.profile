@@ -149,6 +149,18 @@ cleanup()
     if [ "${need_to_restore_templates}" -eq "1" ]; then
         restore_templates
     fi
+
+    echo "\n\n"
+    file ${repo_dir}/third_party/silabs/gecko_sdk/platform/emdrv/nvm3/lib/libnvm3_CM4_gcc.a
+    ls -alh ${repo_dir}/third_party/silabs/gecko_sdk/platform/emdrv/nvm3/lib/libnvm3_CM4_gcc.a
+    ls -alh ${repo_dir}/third_party/silabs/gecko_sdk/platform/emdrv/nvm3/lib
+    echo "\n\n"
+    file ${repo_dir}/third_party/silabs/gecko_sdk/platform/radio/rail_lib/autogen/librail_release/librail_efr32xg1_gcc_release.a
+    ls -alh ${repo_dir}/third_party/silabs/gecko_sdk/platform/radio/rail_lib/autogen/librail_release/librail_efr32xg1_gcc_release.a
+    echo "\n\n"
+    file ${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/libs/libsl_openthread_efr32mg1x_gcc.a
+    ls -alh ${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/libs/libsl_openthread_efr32mg1x_gcc.a
+    echo "\n\n"
 }
 
 trap cleanup EXIT
