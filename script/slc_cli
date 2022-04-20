@@ -35,9 +35,11 @@ fi
 
 script_dir="$(dirname "$(realpath "$script_path")")"
 repo_dir="$(dirname "$script_dir")"
+sdk_dir="${repo_dir}/third_party/silabs/gecko_sdk/"
+board="brdXXXXY"
 
 # slc-cli installation dir
-[ ! -z "${SLC_INSTALL_DIR:-}" ] || SLC_INSTALL_DIR="${repo_dir}/third_party/silabs/slc"
+[ -n "${SLC_INSTALL_DIR:-}" ] || SLC_INSTALL_DIR="${repo_dir}/third_party/silabs/slc"
 
 slc_cmd=""
 slc_exporter_templates_dir=""
@@ -49,8 +51,8 @@ use_slc_from_path=1
 # Wrapper function to execute an slc command
 run_slc()
 {
-    mycmd=("${slc_cmd}" ${@})
-    "${mycmd[@]}"
+    IFS=" " read -r -a slc_args <<<"${@}"
+    "${slc_cmd}" "${slc_args[@]}"
 }
 
 # Find the command to use for slc
@@ -61,7 +63,7 @@ slc_init()
     # 1 - Use slc-cli or slc from PATH
     if command -v slc && [ "$use_slc_from_path" -eq "1" ]; then
         slc_cmd="slc"
-        slc_dir=$(dirname $(which "${slc_cmd}"))
+        slc_dir=$(dirname "$(command -v "${slc_cmd}")")
 
         # Locate exporter templates for inject_templates() and restore_templates()
         slc_version=$(head -n 1 "${slc_dir}"/latest_version)
@@ -84,10 +86,9 @@ slc_init()
             slc_cmd=$(find "${repo_dir}/third_party/silabs/slc" -perm "$([[ $OSTYPE == darwin* ]] && echo '+' || echo '/')"111 -name 'slc*' -type f)
 
         fi
-        slc_dir=$(dirname $(which "${slc_cmd}"))
+        slc_dir=$(dirname "$(command -v "${slc_cmd}")")
         slc_exporter_templates_search_dir="${repo_dir}/third_party/silabs/slc/slc_cli"
     fi
-
 
     # TODO: Remove when MCUDT-27996 is completed. We shouldn't need to inject templates
     # Attempt to find the 'exporter_templates' folder
@@ -97,19 +98,22 @@ slc_init()
         dummy_builddir="${OT_CMAKE_BUILD_DIR:-$repo_dir/build/${platform}/slc/dummy}"
 
         mkdir -p "${dummy_builddir}"
-        cd "${dummy_builddir}"
 
-        run_slc -v 1 signature trust --sdk ${sdk_dir}
+        pushd "${dummy_builddir}" || exit
+
+        run_slc -v 1 signature trust --sdk "${sdk_dir}"
 
         # Run a dummy generation to create the template directory
         run_slc -v 1 generate \
-            --sdk=${sdk_dir} \
+            --sdk="${sdk_dir}" \
             --clear-cache \
-            --project-file=${sdk_dir}/protocol/openthread/sample-apps/ot-ncp/ot-rcp.slcp \
+            --project-file="${sdk_dir}/protocol/openthread/sample-apps/ot-ncp/ot-rcp.slcp" \
             --output-type=makefile \
             --no-copy \
-            --export-destination=${dummy_builddir} \
-            --with ${board}
+            --export-destination="${dummy_builddir}" \
+            --with "${board}"
+
+        popd || exit
 
         # Attempt to find the 'exporter_templates' folder
         slc_exporter_templates_dir=$(find "${slc_exporter_templates_search_dir}" -name 'exporter_templates')
@@ -126,31 +130,31 @@ inject_templates()
     # Make a backup of existing templates
     echo "Backing up ${slc_exporter_templates_dir}"
 
-    pushd ${slc_exporter_templates_dir}
+    pushd "${slc_exporter_templates_dir}" || exit
+
     cp arm_gcc.Makefile arm_gcc.Makefile.bak
     cp arm_gcc.project.mak arm_gcc.project.mak.bak
 
     # Inject templates
     echo "Injecting custom exporter templates"
-    cp ${custom_templates_dir}/custom.Makefile arm_gcc.Makefile
-    cp ${custom_templates_dir}/custom.project.mak arm_gcc.project.mak
-    cp ${custom_templates_dir}/macros.jinja .
+    cp "${custom_templates_dir}/custom.Makefile" arm_gcc.Makefile
+    cp "${custom_templates_dir}/custom.project.mak" arm_gcc.project.mak
+    cp "${custom_templates_dir}/macros.jinja" .
 
-    popd
+    popd || exit
 
     need_to_restore_templates=1
 }
 
 restore_templates()
 {
-    pushd ${slc_exporter_templates_dir}
+    pushd "${slc_exporter_templates_dir}" || exit
     rm -f macros.jinja
     echo "Restoring original slc exporter templates"
     cp arm_gcc.Makefile.bak arm_gcc.Makefile 2>/dev/null || :
     cp arm_gcc.project.mak.bak arm_gcc.project.mak 2>/dev/null || :
-    popd
+    popd || exit
 }
-
 
 cleanup()
 {

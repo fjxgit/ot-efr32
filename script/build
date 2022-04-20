@@ -44,8 +44,9 @@ board="brdXXXXY"
 
 # shellcheck source=script/efr32-definitions
 source "$script_dir/efr32-definitions"
-# shellcheck source=script/slc_cli.profile
-source "$script_dir/slc_cli.profile"
+
+# shellcheck source=script/slc_cli
+source "$script_dir/slc_cli"
 
 # ==============================================================================
 OT_CMAKE_NINJA_TARGET=${OT_CMAKE_NINJA_TARGET:-}
@@ -71,66 +72,66 @@ build()
     cd "${builddir}"
 
     if [ "${skip_generation}" = false ]; then
-        local generated_project_path=${builddir}/slc
+        local generated_project_path="${builddir}"/slc
 
-        run_slc -v 1 signature trust --sdk ${sdk_dir}
+        run_slc -v 1 signature trust --sdk "${sdk_dir}"
 
         # ==============================================================================================================
         # Generate openthread-efr32 and silabs-efr32-sdk libs
         # ==============================================================================================================
         # TODO: This will change once IOTREQ-4050 is completed
-        inject_templates ${repo_dir}/third_party/silabs/slc/exporter_templates/platform
+        inject_templates "${repo_dir}"/third_party/silabs/slc/exporter_templates/platform
         run_slc -v 1 generate \
-            --sdk=${sdk_dir} \
+            --sdk="${sdk_dir}" \
             --clear-cache \
-            --project-file=${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp \
+            --project-file="${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp" \
             --output-type=makefile \
             --no-copy \
-            --export-destination=${generated_project_path}/platform \
-            --with ${board}
+            --export-destination="${generated_project_path}/platform" \
+            --with "${board}"
         restore_templates
 
         # TODO: Remove this when slc supports generic jinja template generation
-        mv ${generated_project_path}/platform/ot-efr32.Makefile ${generated_project_path}/platform/CMakeLists.txt
-        mv ${generated_project_path}/platform/ot-efr32.project.mak ${generated_project_path}/platform/silabs-efr32-sdk.cmake
+        mv "${generated_project_path}/platform/ot-efr32.Makefile" "${generated_project_path}/platform/CMakeLists.txt"
+        mv "${generated_project_path}/platform/ot-efr32.project.mak" "${generated_project_path}/platform/silabs-efr32-sdk.cmake"
 
         # ==============================================================================================================
         # Generate silabs-mbedtls lib
         # ==============================================================================================================
         # TODO: I think when IOTREQ-4050 is finished, we won't need to generate twice
         # TODO: Instead, I believe we should be able to pass in any number of jinja files all at once
-        inject_templates ${repo_dir}/third_party/silabs/slc/exporter_templates/mbedtls
+        inject_templates "${repo_dir}"/third_party/silabs/slc/exporter_templates/mbedtls
         run_slc -v 1 generate \
-            --sdk=${sdk_dir} \
+            --sdk="${sdk_dir}" \
             --clear-cache \
-            --project-file=${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp \
+            --project-file="${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp" \
             --output-type=makefile \
             --no-copy \
-            --export-destination=${generated_project_path}/mbedtls \
-            --with ${board}
+            --export-destination="${generated_project_path}/mbedtls" \
+            --with "${board}"
         restore_templates
 
-        mv ${generated_project_path}/mbedtls/ot-efr32.Makefile ${generated_project_path}/mbedtls/CMakeLists.txt
-        rm -rf ${generated_project_path}/mbedtls/{autogen,config}
+        mv "${generated_project_path}/mbedtls/ot-efr32.Makefile" "${generated_project_path}/mbedtls/CMakeLists.txt"
+        rm -rf "${generated_project_path}"/mbedtls/{autogen,config}
 
         # ==============================================================================================================
         # Generate RCP lib
         # ==============================================================================================================
         # TODO: This will change once IOTREQ-4050 is completed
-        inject_templates ${repo_dir}/third_party/silabs/slc/exporter_templates/rcp
+        inject_templates "${repo_dir}"/third_party/silabs/slc/exporter_templates/rcp
         run_slc -v 1 generate \
-            --sdk=${sdk_dir} \
+            --sdk="${sdk_dir}" \
             --clear-cache \
-            --project-file=${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32-rcp.slcp \
+            --project-file="${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32-rcp.slcp" \
             --output-type=makefile \
             --no-copy \
-            --export-destination=${generated_project_path}/rcp \
-            --with ${board},ot_efr32
+            --export-destination="${generated_project_path}/rcp" \
+            --with "${board},ot_efr32"
         restore_templates
 
         # TODO: Remove this when slc supports generic jinja template generation
-        mv ${generated_project_path}/rcp/ot-efr32-rcp.Makefile ${generated_project_path}/rcp/CMakeLists.txt
-        mv ${generated_project_path}/rcp/ot-efr32-rcp.project.mak ${generated_project_path}/rcp/silabs-efr32-rcp-sdk.cmake
+        mv "${generated_project_path}/rcp/ot-efr32-rcp.Makefile" "${generated_project_path}/rcp/CMakeLists.txt"
+        mv "${generated_project_path}/rcp/ot-efr32-rcp.project.mak" "${generated_project_path}/rcp/silabs-efr32-rcp-sdk.cmake"
     fi
 
     cmake -GNinja -DOT_COMPILE_WARNING_AS_ERROR=ON "$@" "${repo_dir}"
@@ -161,7 +162,7 @@ main()
 {
     local usage="usage: $0 [-h] [--skip-silabs-apps] <efr32 platform> -DBOARD=<brdXXXXy> [-D<OT_XXXX=ON> -D<OT_YYYY=OFF>]"
 
-    local skip_silabs_apps=false
+    local skip_silabs_apps=true
     skip_generation=false
     # Parse flags
     optspec=":h-:"
@@ -216,15 +217,15 @@ main()
             # OT_CMAKE_NINJA_TARGET=("ot-cli-ftd")
             # OT_CMAKE_NINJA_TARGET=("ot-rcp" "ot-cli-ftd" )
             OT_CMAKE_NINJA_TARGET=("ot-rcp" "ot-cli-ftd" "ot-cli-mtd" "ot-ncp-ftd" "ot-ncp-mtd")
-            # if [ "${skip_silabs_apps}" = false ]; then
-            #     OT_CMAKE_NINJA_TARGET+=("sleepy-demo-ftd" "sleepy-demo-mtd")
-            # fi
+            if [ "${skip_silabs_apps}" = false ]; then
+                OT_CMAKE_NINJA_TARGET+=("sleepy-demo-ftd" "sleepy-demo-mtd")
+            fi
             ;;
     esac
 
-    lowercase_args=$(echo $@ | tr '[:upper:]' '[:lower:]')
-    board=$([[ ${lowercase_args} =~ (brd[0-9]{4}[a-z]{1}) ]] && echo ${BASH_REMATCH[1]})
-    echo ${board}
+    lowercase_args=$(echo "$@" | tr '[:upper:]' '[:lower:]')
+    board=$([[ ${lowercase_args} =~ (brd[0-9]{4}[a-z]{1}) ]] && echo "${BASH_REMATCH[1]}")
+    echo "${board}"
 
     # Find slc-cli installation
     slc_init
