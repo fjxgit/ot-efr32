@@ -27,6 +27,15 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 #
 
+if [[ -n ${BASH_SOURCE[0]} ]]; then
+    script_path="${BASH_SOURCE[0]}"
+else
+    script_path="$0"
+fi
+
+script_dir="$(dirname "$(realpath "$script_path")")"
+repo_dir="$(dirname "$script_dir")"
+
 # slc-cli installation dir
 [ ! -z "${SLC_INSTALL_DIR:-}" ] || SLC_INSTALL_DIR="${repo_dir}/third_party/silabs/slc"
 
@@ -66,11 +75,14 @@ slc_init()
             # Find the slc executable
             slc_cmd=$(find "${repo_dir}/third_party/silabs/slc" -perm "$([[ $OSTYPE == darwin* ]] && echo '+' || echo '/')"111 -name 'slc*' -type f)
 
-            # Exit if nothing was found
+            # Automatically download slc if not found
             if [ -z "${slc_cmd}" ]; then
-                echo "slc-cli has not been installed yet. Please run ./script/bootstrap"
-                exit
+                "${repo_dir}"/script/bootstrap
             fi
+
+            # Find the slc executable
+            slc_cmd=$(find "${repo_dir}/third_party/silabs/slc" -perm "$([[ $OSTYPE == darwin* ]] && echo '+' || echo '/')"111 -name 'slc*' -type f)
+
         fi
         slc_dir=$(dirname $(which "${slc_cmd}"))
         slc_exporter_templates_search_dir="${repo_dir}/third_party/silabs/slc/slc_cli"
@@ -149,18 +161,6 @@ cleanup()
     if [ "${need_to_restore_templates}" -eq "1" ]; then
         restore_templates
     fi
-
-    echo "\n\n"
-    file ${repo_dir}/third_party/silabs/gecko_sdk/platform/emdrv/nvm3/lib/libnvm3_CM4_gcc.a
-    ls -alh ${repo_dir}/third_party/silabs/gecko_sdk/platform/emdrv/nvm3/lib/libnvm3_CM4_gcc.a
-    ls -alh ${repo_dir}/third_party/silabs/gecko_sdk/platform/emdrv/nvm3/lib
-    echo "\n\n"
-    file ${repo_dir}/third_party/silabs/gecko_sdk/platform/radio/rail_lib/autogen/librail_release/librail_efr32xg1_gcc_release.a
-    ls -alh ${repo_dir}/third_party/silabs/gecko_sdk/platform/radio/rail_lib/autogen/librail_release/librail_efr32xg1_gcc_release.a
-    echo "\n\n"
-    file ${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/libs/libsl_openthread_efr32mg1x_gcc.a
-    ls -alh ${repo_dir}/third_party/silabs/gecko_sdk/protocol/openthread/libs/libsl_openthread_efr32mg1x_gcc.a
-    echo "\n\n"
 }
 
 trap cleanup EXIT
