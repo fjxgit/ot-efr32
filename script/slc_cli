@@ -79,7 +79,7 @@ slc_init()
 
             # Automatically download slc if not found
             if [ -z "${slc_cmd}" ]; then
-                "${repo_dir}"/script/bootstrap
+                "${repo_dir}"/script/bootstrap_silabs
             fi
 
             # Find the slc executable
