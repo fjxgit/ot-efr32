@@ -26,7 +26,7 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 #
 
-cmake_minimum_required(VERSION 3.16.3)
+cmake_minimum_required(VERSION 3.16.0)
 project(ot-efr32 VERSION 1.0.0)
 
 include("${PROJECT_SOURCE_DIR}/openthread/etc/cmake/functions.cmake")
