@@ -84,7 +84,7 @@ build()
         run_slc -v 1 generate \
             --sdk="${sdk_dir}" \
             --clear-cache \
-            --project-file="${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp" \
+            --project-file="${repo_dir}/src/platform_projects/ot-efr32-soc.slcp" \
             --output-type=makefile \
             --no-copy \
             --export-destination="${generated_project_path}/platform" \
@@ -104,7 +104,7 @@ build()
         run_slc -v 1 generate \
             --sdk="${sdk_dir}" \
             --clear-cache \
-            --project-file="${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32.slcp" \
+            --project-file="${repo_dir}/src/platform_projects/ot-efr32-soc.slcp" \
             --output-type=makefile \
             --no-copy \
             --export-destination="${generated_project_path}/mbedtls" \
@@ -122,7 +122,7 @@ build()
         run_slc -v 1 generate \
             --sdk="${sdk_dir}" \
             --clear-cache \
-            --project-file="${sdk_dir}/protocol/openthread/sample-apps/ot-efr32/ot-efr32-rcp.slcp" \
+            --project-file="${repo_dir}/src/platform_projects/ot-efr32-rcp.slcp" \
             --output-type=makefile \
             --no-copy \
             --export-destination="${generated_project_path}/rcp" \
