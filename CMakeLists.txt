@@ -46,7 +46,7 @@ set(OT_PLATFORM "external" CACHE STRING "disable example platforms" FORCE)
 # ==============================================================================
 # mbedtls
 # ==============================================================================
-set(OT_EXTERNAL_MBEDTLS "silabs-mbedtls" CACHE STRING "use silabs mbedtls" FORCE)
+set(OT_EXTERNAL_MBEDTLS "silabs-mbedtls-soc" CACHE STRING "use silabs mbedtls" FORCE)
 set(OT_BUILTIN_MBEDTLS_MANAGEMENT OFF CACHE BOOL "disable builtin mbedtls management" FORCE)
 set(OT_MBEDTLS ${OT_EXTERNAL_MBEDTLS})
 
@@ -62,7 +62,20 @@ target_compile_options(ot-config INTERFACE
 )
 
 add_subdirectory(examples)
-add_subdirectory(build/${EFR32_PLATFORM}/slc/platform)
-add_subdirectory(build/${EFR32_PLATFORM}/slc/mbedtls)
-add_subdirectory(build/${EFR32_PLATFORM}/slc/rcp)
+
+set(slc_generated_projects
+    ${PROJECT_SOURCE_DIR}/build/${EFR32_PLATFORM}/slc/soc/platform
+    ${PROJECT_SOURCE_DIR}/build/${EFR32_PLATFORM}/slc/soc/mbedtls
+    ${PROJECT_SOURCE_DIR}/build/${EFR32_PLATFORM}/slc/rcp/platform
+    ${PROJECT_SOURCE_DIR}/build/${EFR32_PLATFORM}/slc/rcp/mbedtls
+)
+foreach(slc_project IN LISTS slc_generated_projects)
+    message("Checking ${slc_project}")
+    if(EXISTS ${slc_project})
+        message("......... EXISTS")
+        add_subdirectory(${slc_project})
+    else()
+        message("......... NOT EXISTS")
+    endif()
+endforeach()
 add_subdirectory(third_party)

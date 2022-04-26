@@ -16,9 +16,9 @@ include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 # ==============================================================================
 set(slc_gen_dir ${PROJECT_BINARY_DIR}/slc)
 
-add_library(silabs-efr32-rcp-sdk)
+add_library(silabs-efr32-sdk-rcp)
 
-set_target_properties(silabs-efr32-rcp-sdk
+set_target_properties(silabs-efr32-sdk-rcp
     PROPERTIES
         C_STANDARD 99
         CXX_STANDARD 11
@@ -27,7 +27,7 @@ set_target_properties(silabs-efr32-rcp-sdk
 # ==============================================================================
 # Includes
 # ==============================================================================
-target_include_directories(ot-config INTERFACE
+target_include_directories(silabs-efr32-sdk-rcp PUBLIC
 {%- for include in C_CXX_INCLUDES %}
     {%- if ('sample-apps' not in include) %}
     {{ prepare_path(include) | replace('-I', '') | replace('\"', '') }}
@@ -35,7 +35,7 @@ target_include_directories(ot-config INTERFACE
 {%- endfor %}
 )
 
-target_include_directories(silabs-efr32-rcp-sdk
+target_include_directories(silabs-efr32-sdk-rcp
     PRIVATE
         ${OT_PUBLIC_INCLUDES}
 )
@@ -43,7 +43,7 @@ target_include_directories(silabs-efr32-rcp-sdk
 # ==============================================================================
 # Sources
 # ==============================================================================
-target_sources(silabs-efr32-rcp-sdk
+target_sources(silabs-efr32-sdk-rcp
     PRIVATE
 {%- for source in (ALL_SOURCES | sort) %}
     {%- set source = prepare_path(source) -%}
@@ -63,18 +63,19 @@ target_sources(silabs-efr32-rcp-sdk
     {#- Ignore crypto sources #}
     {%- if ('util/third_party/crypto/mbedtls' not in source) and ('${PROJECT_SOURCE_DIR}/src/src' not in source) and ('coprocessor' not in source) and ('${PROJECT_SOURCE_DIR}/openthread' not in source) %}
         {%- if source.endswith('.s') or source.endswith('.S') %}
-target_sources(silabs-efr32-rcp-sdk PRIVATE {{source}})
+target_sources(silabs-efr32-sdk-rcp PRIVATE {{source}})
 set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
         {%- endif %}
     {%- endif %}
 {%- endfor %}
 
-target_link_libraries(silabs-efr32-rcp-sdk
+target_link_libraries(silabs-efr32-sdk-rcp
     PUBLIC
-        silabs-mbedtls
+        silabs-mbedtls-rcp
 {%- for source in SYS_LIBS+USER_LIBS %}
         {{prepare_path(source)}}
 {%- endfor %}
+        openthread-efr32-rcp-config
         ot-config
 )
 
@@ -82,7 +83,7 @@ target_link_libraries(silabs-efr32-rcp-sdk
 # ==============================================================================
 #  Compile Options
 # ==============================================================================
-target_compile_options(silabs-efr32-rcp-sdk PRIVATE
+target_compile_options(silabs-efr32-sdk-rcp PRIVATE
     -Wno-unused-parameter
     -Wno-missing-field-initializers
     {{ compile_flags() }}
@@ -94,7 +95,7 @@ target_compile_options(silabs-efr32-rcp-sdk PRIVATE
 # ==============================================================================
 #  Linker Flags
 # ==============================================================================
-target_link_options(silabs-efr32-rcp-sdk PRIVATE {{ linker_flags() }}
+target_link_options(silabs-efr32-sdk-rcp PRIVATE {{ linker_flags() }}
 )
 {%- endif %} {# linker_flags #}
 

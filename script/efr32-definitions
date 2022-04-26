@@ -52,13 +52,8 @@ efr32_check_platform()
     # Checks if a value is a valid efr32 platform
     #
     # Arg $1 -- value
-    if [ -z "$1" ] || [ $# -ne 1 ]; then
-        printf "Checks if a value is a valid efr32 platform\n\nUsage:\n\t%s <value> \n" "$0" >&2
-        return 1
-    fi
-
     local match=false
-    local platform="$1"
+    local platform="${1:-}"
 
     for efr32_platform in $(efr32_get_platforms); do
         if [[ $efr32_platform == "$platform" ]]; then
@@ -68,27 +63,16 @@ efr32_check_platform()
     done
 
     if ! $match; then
-        printf "ERROR: Invalid platform\nValid platforms:   %s\n" "$(efr32_get_platforms)" >&2
+        set +x
+        printf "\n\nERROR: Invalid platform\n" >&2
+        printf "Valid platforms:\n" >&2
+        for platform in $(efr32_get_platforms); do
+            printf " - %s\n" "${platform}" >&2
+        done
+        set -x
         return 2
     fi
     return 0
-}
-
-efr32_get_boards()
-{
-    # Gets a list of boards for a given platform
-    #
-    # Arg $1 -- efr32 platform
-    if [ -z "$1" ] || [ $# -ne 1 ]; then
-        printf "Gets a list of boards for a given platform\n\nUsage:\n\t%s <efr32_platform> \n" "$(basename "$0")" >&2
-        return 1
-    fi
-
-    local platform="$1"
-
-    efr32_check_platform "$platform" \
-        && local platform_dir="$repo_dir/src/$platform" \
-        && find "$platform_dir" -type d -name 'brd*' -exec basename {} \; | sort
 }
 
 efr32_get_jlink_device()

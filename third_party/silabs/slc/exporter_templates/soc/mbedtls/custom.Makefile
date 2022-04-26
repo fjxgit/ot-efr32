@@ -29,9 +29,9 @@
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 
-add_library(silabs-mbedtls)
+add_library(silabs-mbedtls-soc)
 
-set_target_properties(silabs-mbedtls
+set_target_properties(silabs-mbedtls-soc
     PROPERTIES
         C_STANDARD 99
         CXX_STANDARD 11
@@ -39,28 +39,30 @@ set_target_properties(silabs-mbedtls
 
 set(SILABS_MBEDTLS_DIR "${SILABS_GSDK_DIR}/util/third_party/crypto/mbedtls")
 
-target_compile_definitions(silabs-mbedtls
+target_compile_definitions(silabs-mbedtls-soc
     PRIVATE
+        # ${EFR32_PLATFORM_DEFINES_SOC}
         ${OT_PLATFORM_DEFINES}
 )
 
 {%- set linker_flags = EXT_LD_FLAGS + EXT_DEBUG_LD_FLAGS %}
 {%- if linker_flags %}
-target_link_options(silabs-mbedtls PRIVATE
+target_link_options(silabs-mbedtls-soc PRIVATE
 {%- for flag in linker_flags %}
     {{ prepare_path(flag) }}
 {%- endfor %}
 )
 {%- endif %}
 
-target_link_libraries(silabs-mbedtls
+target_link_libraries(silabs-mbedtls-soc
     PRIVATE
         ot-config
+        openthread-efr32-config
 )
 
 {%- if C_CXX_INCLUDES %}
-target_include_directories(silabs-mbedtls
-    PRIVATE
+target_include_directories(silabs-mbedtls-soc
+    PUBLIC
 {%- for include in C_CXX_INCLUDES %}
 {%- if ('util/third_party/crypto' in include) or ('platform' in include) %}
         {{ prepare_path(include) | replace('-I', '') | replace('\"', '') }}
@@ -80,7 +82,7 @@ set(SILABS_MBEDTLS_SOURCES
 {%- endfor %}
 )
 
-target_sources(silabs-mbedtls PRIVATE ${SILABS_MBEDTLS_SOURCES})
+target_sources(silabs-mbedtls-soc PRIVATE ${SILABS_MBEDTLS_SOURCES})
 
 
 

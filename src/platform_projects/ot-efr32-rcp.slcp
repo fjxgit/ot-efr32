@@ -7,7 +7,9 @@ quality: internal
 
 component:
   - id: brd4001a
-  - id: ot_stack_rcp
+  - id: ot_platform_abstraction_core
+  - id: ot_thirdparty
+  - id: ot_efr32_rcp
   - id: uartdrv_usart
     instance:
       - vcom
@@ -16,37 +18,9 @@ component:
 configuration:
   - name: SL_BOARD_ENABLE_VCOM
     value: 1
-  - name: OPENTHREAD_CONFIG_HEAP_EXTERNAL_ENABLE
-    value: 0
-  - name: OPENTHREAD_CONFIG_BACKBONE_ROUTER_ENABLE
+
+define:
+  - name: OPENTHREAD_COPROCESSOR
     value: 1
-  - name: OPENTHREAD_CONFIG_BORDER_AGENT_ENABLE
+  - name: OPENTHREAD_RADIO
     value: 1
-  - name: OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_COAP_API_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_COAP_OBSERVE_API_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_COAP_SECURE_API_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_DHCP6_CLIENT_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_DHCP6_SERVER_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_DNSSD_SERVER_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_JOINER_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_MAC_FILTER_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_SRP_SERVER_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE
-    value: 1
-  - name: OPENTHREAD_CONFIG_LOG_OUTPUT
-    value: OPENTHREAD_CONFIG_LOG_OUTPUT_APP

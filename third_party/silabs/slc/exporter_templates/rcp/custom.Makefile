@@ -7,10 +7,10 @@
 # replace all existing CMake files for the GSDK.                   #
 #                                                                  #
 ####################################################################
-{% from 'macros.jinja' import prepare_path,compile_flags,linker_flags,platform_defines with context -%}
+{% from 'macros.jinja' import prepare_path,compile_flags,linker_flags with context -%}
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
-include(silabs-efr32-rcp-sdk.cmake)
+include(silabs-efr32-sdk-rcp.cmake)
 
 # ==============================================================================
 # Platform library
@@ -19,7 +19,10 @@ add_library(openthread-efr32-rcp
     $<TARGET_OBJECTS:openthread-platform-utils>
 )
 
+add_library(openthread-efr32-rcp-config INTERFACE)
+
 set(OT_PLATFORM_LIB_RCP openthread-efr32-rcp)
+set(OT_MBEDTLS_RCP silabs-mbedtls-rcp)
 
 set_target_properties(openthread-efr32-rcp
     PROPERTIES
@@ -29,11 +32,19 @@ set_target_properties(openthread-efr32-rcp
 
 target_include_directories(ot-config INTERFACE
 {%- for include in C_CXX_INCLUDES %}
-    {%- if ('sample-apps' not in include) %}
-    {{ prepare_path(include) | replace('-I', '') | replace('\"', '') }}
+    {%- set include = prepare_path(include) | replace('-I', '') | replace('\"', '') %}
+    {%- if not (('sample-apps' in include) or ('autogen' == include) or ('config' == include)) %}
+    {{ include }}
     {%- endif %}
 {%- endfor %}
 )
+
+target_include_directories(openthread-efr32-rcp-config INTERFACE
+    autogen
+    config
+)
+
+target_link_libraries(openthread-radio PUBLIC openthread-efr32-rcp-config)
 
 target_include_directories(openthread-efr32-rcp
     PRIVATE
@@ -66,31 +77,32 @@ set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
     {%- endif %}
 {%- endfor %}
 
-list(APPEND OT_PLATFORM_DEFINES
+target_compile_definitions(ot-config INTERFACE
     {%- for define in C_CXX_DEFINES %}
-        {%- if not ( ("OPENTHREAD_RADIO" == define) or ("OPENTHREAD_FTD" == define) or ("OPENTHREAD_MTD" == define) or ("OPENTHREAD_COPROCESSOR" == define) ) %}
+        {%- if not ( define.startswith("MBEDTLS_PSA_CRYPTO_CLIENT") or ("OPENTHREAD_RADIO" == define) or ("OPENTHREAD_FTD" == define) or ("OPENTHREAD_MTD" == define) or ("OPENTHREAD_COPROCESSOR" == define) ) %}
+        {{define}}={{C_CXX_DEFINES[define]}}
+        {%- endif %}
+    {%- endfor %}
+)
+
+target_compile_definitions(openthread-efr32-rcp-config INTERFACE
+    {%- for define in C_CXX_DEFINES %}
+        {%- if define.startswith("MBEDTLS_PSA_CRYPTO_CLIENT") %}
         {{define}}={{C_CXX_DEFINES[define]}}
         {%- endif %}
     {%- endfor %}
 )
 
 target_compile_definitions(openthread-efr32-rcp PUBLIC
-    ${OT_PLATFORM_DEFINES}
     {%- for define in C_CXX_DEFINES %}
         {%- if ( ("OPENTHREAD_RADIO" == define) or ("OPENTHREAD_FTD" == define) or ("OPENTHREAD_MTD" == define) or ("OPENTHREAD_COPROCESSOR" == define) ) %}
         {{define}}={{C_CXX_DEFINES[define]}}
         {%- endif %}
     {%- endfor %}
 )
-target_compile_definitions(silabs-efr32-rcp-sdk PRIVATE
-    ${OT_PLATFORM_DEFINES}
-)
-target_compile_definitions(ot-config INTERFACE
-    ${OT_PLATFORM_DEFINES}
-)
 
 set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/linkerfile.ld")
-set(silabs-efr32-rcp-sdk_location $<TARGET_FILE:silabs-efr32-rcp-sdk>)
+set(silabs-efr32-sdk-rcp_location $<TARGET_FILE:silabs-efr32-sdk-rcp>)
 target_link_libraries(openthread-efr32-rcp
     PUBLIC
 {%- for lib_name in SYS_LIBS+USER_LIBS %}
@@ -101,11 +113,12 @@ target_link_libraries(openthread-efr32-rcp
         {{lib_name | replace('\\', '/') | replace(' ', '\\ ') | replace('"','')}}
     {%- endif %}
 {%- endfor %}
+        openthread-efr32-rcp-config
 
     PRIVATE
         -T${LD_FILE}
         -Wl,--gc-sections
-        -Wl,--whole-archive ${silabs-efr32-rcp-sdk_location} -Wl,--no-whole-archive
+        -Wl,--whole-archive ${silabs-efr32-sdk-rcp_location} -Wl,--no-whole-archive
         jlinkrtt
         ot-config
 )
@@ -153,7 +166,7 @@ foreach(lib_file ${GSDK_LIBS})
     set_target_properties(${imported_lib_name}
         PROPERTIES
             IMPORTED_LOCATION "${lib_file}"
-            IMPORTED_LINK_INTERFACE_LIBRARIES silabs-efr32-rcp-sdk
+            IMPORTED_LINK_INTERFACE_LIBRARIES silabs-efr32-sdk-rcp
     )
     target_link_libraries(openthread-efr32-rcp PUBLIC ${imported_lib_name})
 endforeach()

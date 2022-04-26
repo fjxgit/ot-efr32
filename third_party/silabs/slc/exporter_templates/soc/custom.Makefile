@@ -10,7 +10,7 @@
 {% from 'macros.jinja' import prepare_path,compile_flags,linker_flags,openthread_device_type with context -%}
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
-include(silabs-efr32-sdk.cmake)
+include(silabs-efr32-sdk-soc.cmake)
 
 # ==============================================================================
 # Platform library
@@ -18,6 +18,8 @@ include(silabs-efr32-sdk.cmake)
 add_library(openthread-efr32
     $<TARGET_OBJECTS:openthread-platform-utils>
 )
+
+add_library(openthread-efr32-config INTERFACE)
 
 set_target_properties(openthread-efr32
     PROPERTIES
@@ -27,11 +29,20 @@ set_target_properties(openthread-efr32
 
 target_include_directories(ot-config INTERFACE
 {%- for include in C_CXX_INCLUDES %}
-    {%- if ('sample-apps' not in include) %}
-    {{ prepare_path(include) | replace('-I', '') | replace('\"', '') }}
+    {%- set include = prepare_path(include) | replace('-I', '') | replace('\"', '') %}
+    {%- if not (('sample-apps' in include) or ('autogen' == include) or ('config' == include)) %}
+    {{ include }}
     {%- endif %}
 {%- endfor %}
 )
+
+target_include_directories(openthread-efr32-config INTERFACE
+    autogen
+    config
+)
+
+target_link_libraries(openthread-ftd PUBLIC openthread-efr32-config)
+target_link_libraries(openthread-mtd PUBLIC openthread-efr32-config)
 
 target_include_directories(openthread-efr32
     PRIVATE
@@ -64,33 +75,36 @@ set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
     {%- endif %}
 {%- endfor %}
 
-
-list(APPEND OT_PLATFORM_DEFINES
+target_compile_definitions(ot-config INTERFACE
     {%- for define in C_CXX_DEFINES %}
-        {%- if not ( ("OPENTHREAD_RADIO" == define) or ("OPENTHREAD_FTD" == define) or ("OPENTHREAD_MTD" == define) or ("OPENTHREAD_COPROCESSOR" == define) ) %}
+        {%- if not ( define.startswith("MBEDTLS_PSA_CRYPTO_CLIENT") or ("OPENTHREAD_RADIO" == define) or ("OPENTHREAD_FTD" == define) or ("OPENTHREAD_MTD" == define) or ("OPENTHREAD_COPROCESSOR" == define) ) %}
         {{define}}={{C_CXX_DEFINES[define]}}
         {%- endif %}
     {%- endfor %}
 )
-set(OT_PLATFORM_DEFINES ${OT_PLATFORM_DEFINES} PARENT_SCOPE)
+
+target_compile_definitions(openthread-efr32-config INTERFACE
+# list(APPEND EFR32_PLATFORM_DEFINES_SOC
+    {%- for define in C_CXX_DEFINES %}
+        {%- if define.startswith("MBEDTLS_PSA_CRYPTO_CLIENT") %}
+        {{define}}={{C_CXX_DEFINES[define]}}
+        {%- endif %}
+    {%- endfor %}
+)
+# set(EFR32_PLATFORM_DEFINES_SOC ${EFR32_PLATFORM_DEFINES_SOC} PARENT_SCOPE)
 
 target_compile_definitions(openthread-efr32 PUBLIC
-    ${OT_PLATFORM_DEFINES}
+    # ${EFR32_PLATFORM_DEFINES_SOC}
     {{ openthread_device_type(C_CXX_DEFINES) }}
 )
 
-target_compile_definitions(silabs-efr32-sdk PRIVATE
-    ${OT_PLATFORM_DEFINES}
+target_compile_definitions(silabs-efr32-sdk-soc PRIVATE
+    # ${EFR32_PLATFORM_DEFINES_SOC}
     {{ openthread_device_type(C_CXX_DEFINES) }}
 )
-
-target_compile_definitions(ot-config INTERFACE
-    ${OT_PLATFORM_DEFINES}
-)
-
 
 set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/linkerfile.ld")
-set(silabs-efr32-sdk_location $<TARGET_FILE:silabs-efr32-sdk>)
+set(silabs-efr32-sdk-soc_location $<TARGET_FILE:silabs-efr32-sdk-soc>)
 target_link_libraries(openthread-efr32
     PUBLIC
 {%- for lib_name in SYS_LIBS+USER_LIBS %}
@@ -101,11 +115,12 @@ target_link_libraries(openthread-efr32
         {{lib_name | replace('\\', '/') | replace(' ', '\\ ') | replace('"','')}}
     {%- endif %}
 {%- endfor %}
+        openthread-efr32-config
 
     PRIVATE
         -T${LD_FILE}
         -Wl,--gc-sections
-        -Wl,--whole-archive ${silabs-efr32-sdk_location} -Wl,--no-whole-archive
+        -Wl,--whole-archive ${silabs-efr32-sdk-soc_location} -Wl,--no-whole-archive
         jlinkrtt
         ot-config
 )
@@ -153,7 +168,7 @@ foreach(lib_file ${GSDK_LIBS})
     set_target_properties(${imported_lib_name}
         PROPERTIES
             IMPORTED_LOCATION "${lib_file}"
-            IMPORTED_LINK_INTERFACE_LIBRARIES silabs-efr32-sdk
+            IMPORTED_LINK_INTERFACE_LIBRARIES silabs-efr32-sdk-soc
     )
     target_link_libraries(openthread-efr32 PUBLIC ${imported_lib_name})
 endforeach()
