@@ -214,7 +214,6 @@ otError otPlatUartDisable(void)
     return OT_ERROR_NOT_IMPLEMENTED;
 }
 
-#if !defined(SL_COMPONENT_CATALOG_PRESENT) || defined(SL_CATALOG_OPENTHREAD_CLI_PRESENT)
 static void flushTimeoutAlarmCallback(sl_sleeptimer_timer_handle_t *aHandle, void *aData)
 {
     OT_UNUSED_VARIABLE(aHandle);
@@ -259,7 +258,6 @@ otError otPlatUartFlush(void)
 exit:
     return error;
 }
-#endif // !defined(SL_COMPONENT_CATALOG_PRESENT) || defined(SL_CATALOG_OPENTHREAD_CLI_PRESENT)
 
 OT_TOOL_WEAK void otPlatUartReceived(const uint8_t *aBuf, uint16_t aBufLength)
 {
