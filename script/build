@@ -80,7 +80,6 @@ build()
         # Generate openthread-efr32 and silabs-efr32-sdk libs
         # ==============================================================================================================
         # TODO: This will change once IOTREQ-4050 is completed
-        inject_templates "${repo_dir}"/third_party/silabs/slc/exporter_templates/soc
         current_project_export_dir="${slc_generated_projects_dir}/soc/platform"
 
         run_slc -v 1 generate \
@@ -89,9 +88,9 @@ build()
             --project-file="${repo_dir}/src/platform_projects/ot-efr32-soc.slcp" \
             --output-type=makefile \
             --no-copy \
+            --export-templates="${repo_dir}"/third_party/silabs/slc/exporter_templates/soc \
             --export-destination="${current_project_export_dir}" \
             --with "${board}"
-        restore_templates
 
         # TODO: Remove this when slc supports generic jinja template generation
         mv "${current_project_export_dir}/ot-efr32-soc.Makefile"    "${current_project_export_dir}/CMakeLists.txt"
@@ -100,9 +99,6 @@ build()
         # ==============================================================================================================
         # Generate silabs-mbedtls-soc lib
         # ==============================================================================================================
-        # TODO: I think when IOTREQ-4050 is finished, we won't need to generate twice
-        # TODO: Instead, I believe we should be able to pass in any number of jinja files all at once
-        inject_templates "${repo_dir}"/third_party/silabs/slc/exporter_templates/soc/mbedtls
         current_project_export_dir="${slc_generated_projects_dir}/soc/mbedtls"
 
         run_slc -v 1 generate \
@@ -111,9 +107,9 @@ build()
             --project-file="${repo_dir}/src/platform_projects/ot-efr32-soc.slcp" \
             --output-type=makefile \
             --no-copy \
+            --export-templates="${repo_dir}"/third_party/silabs/slc/exporter_templates/soc/mbedtls \
             --export-destination="${current_project_export_dir}" \
             --with "${board}"
-        restore_templates
 
         # TODO: Remove this when slc supports generic jinja template generation
         mv "${current_project_export_dir}/ot-efr32-soc.Makefile" "${current_project_export_dir}/CMakeLists.txt"
@@ -123,8 +119,6 @@ build()
         # ==============================================================================================================
         # Generate RCP lib
         # ==============================================================================================================
-        # TODO: This will change once IOTREQ-4050 is completed
-        inject_templates "${repo_dir}"/third_party/silabs/slc/exporter_templates/rcp
         current_project_export_dir="${slc_generated_projects_dir}/rcp/platform"
 
         run_slc -v 1 generate \
@@ -133,9 +127,9 @@ build()
             --project-file="${repo_dir}/src/platform_projects/ot-efr32-rcp.slcp" \
             --output-type=makefile \
             --no-copy \
+            --export-templates="${repo_dir}"/third_party/silabs/slc/exporter_templates/rcp \
             --export-destination="${current_project_export_dir}" \
             --with "${board}"
-        restore_templates
 
         # TODO: Remove this when slc supports generic jinja template generation
         mv "${current_project_export_dir}/ot-efr32-rcp.Makefile"    "${current_project_export_dir}/CMakeLists.txt"
@@ -146,7 +140,6 @@ build()
         # ==============================================================================================================
         # TODO: I think when IOTREQ-4050 is finished, we won't need to generate twice
         # TODO: Instead, I believe we should be able to pass in any number of jinja files all at once
-        inject_templates "${repo_dir}"/third_party/silabs/slc/exporter_templates/rcp/mbedtls
         current_project_export_dir="${slc_generated_projects_dir}/rcp/mbedtls"
 
         run_slc -v 1 generate \
@@ -155,9 +148,9 @@ build()
             --project-file="${repo_dir}/src/platform_projects/ot-efr32-rcp.slcp" \
             --output-type=makefile \
             --no-copy \
+            --export-templates="${repo_dir}"/third_party/silabs/slc/exporter_templates/rcp/mbedtls \
             --export-destination="${current_project_export_dir}" \
             --with "${board}"
-        restore_templates
 
         # TODO: Remove this when slc supports generic jinja template generation
         mv "${current_project_export_dir}/ot-efr32-rcp.Makefile" "${current_project_export_dir}/CMakeLists.txt"
