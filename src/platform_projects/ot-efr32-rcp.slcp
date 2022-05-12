@@ -9,7 +9,6 @@ component:
   - id: brd4001a
   - id: ot_platform_abstraction_core
   - id: ot_thirdparty
-  - id: ot_efr32_rcp
   - id: uartdrv_usart
     instance:
       - vcom
