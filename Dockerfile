@@ -5,13 +5,12 @@ ENV repo_dir="/ot-efr32"
 
 # Install packages
 RUN apt-get update && \
-      apt-get -y install sudo
-
+      apt-get -y install sudo tzdata
 
 # Copy scripts
-RUN mkdir ${repo_dir}
-COPY ./script /ot-efr32/script
-COPY ./openthread/script /ot-efr32/openthread/script
+RUN mkdir -p ${repo_dir}/third_party/silabs/slc
+COPY ./script ${repo_dir}/script
+COPY ./openthread/script ${repo_dir}/openthread/script
 
 # bootstrap
 RUN ./ot-efr32/script/bootstrap

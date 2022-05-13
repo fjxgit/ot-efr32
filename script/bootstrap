@@ -35,7 +35,7 @@ install_packages_apt()
 
     # apt-get update and install dependencies
     sudo apt-get update
-    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre python3-setuptools python3-pip git-lfs
+    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre python3-setuptools python3-pip git-lfs unzip
 }
 
 install_packages_opkg()
