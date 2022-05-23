@@ -29,7 +29,8 @@
 cmake_minimum_required(VERSION 3.16.0)
 project(ot-efr32 VERSION 1.0.0)
 
-include("${PROJECT_SOURCE_DIR}/openthread/etc/cmake/functions.cmake")
+include(${PROJECT_SOURCE_DIR}/openthread/etc/cmake/functions.cmake)
+include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 
 set(OT_PACKAGE_VERSION "" CACHE STRING "OpenThread Package Version")
 if(OT_PACKAGE_VERSION STREQUAL "")
@@ -64,10 +65,10 @@ target_compile_options(ot-config INTERFACE
 add_subdirectory(examples)
 
 set(slc_generated_projects
-    ${PROJECT_SOURCE_DIR}/build/${EFR32_PLATFORM}/slc/soc/platform
-    ${PROJECT_SOURCE_DIR}/build/${EFR32_PLATFORM}/slc/soc/mbedtls
-    ${PROJECT_SOURCE_DIR}/build/${EFR32_PLATFORM}/slc/rcp/platform
-    ${PROJECT_SOURCE_DIR}/build/${EFR32_PLATFORM}/slc/rcp/mbedtls
+    ${PROJECT_SOURCE_DIR}/build/${BOARD_LOWERCASE}/slc/soc/platform
+    ${PROJECT_SOURCE_DIR}/build/${BOARD_LOWERCASE}/slc/soc/mbedtls
+    ${PROJECT_SOURCE_DIR}/build/${BOARD_LOWERCASE}/slc/rcp/platform
+    ${PROJECT_SOURCE_DIR}/build/${BOARD_LOWERCASE}/slc/rcp/mbedtls
 )
 foreach(slc_project IN LISTS slc_generated_projects)
     message("Checking ${slc_project}")

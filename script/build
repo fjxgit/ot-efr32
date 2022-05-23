@@ -66,7 +66,7 @@ die()
 
 build()
 {
-    builddir="${OT_CMAKE_BUILD_DIR:-$repo_dir/build/${platform}}"
+    builddir="${OT_CMAKE_BUILD_DIR:-$repo_dir/build/${board}}"
 
     mkdir -p "${builddir}"
     cd "${builddir}"
@@ -224,7 +224,7 @@ main()
     # Determine board's platform and exit if unsupported
     local platform=$(
         grep -Po 'board:device:.*' ${sdk_dir}/hardware/board/component/${board}.slcc |
-        sed 's/board:device:\(efr32\)*\([[:alpha:]]\{2\}\)m*\([[:digit:]]\{2\}\).*/efr32\2\3/' |
+        sed 's/board:device:\(efr32\)*\([[:alpha:]]\{2\}\)m*\([[:digit:]]\{1,2\}\).*/efr32\2\3/' |
         head -n 1 )
     efr32_check_platform "${platform}" || die "Unsupported platform ${platform}"
 
