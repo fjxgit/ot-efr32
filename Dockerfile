@@ -5,7 +5,8 @@ ENV repo_dir="/ot-efr32"
 
 # Install packages
 RUN apt-get update && \
-      apt-get -y install sudo tzdata
+      apt-get -y install sudo tzdata && \
+      rm -rf /var/lib/apt/lists/*
 
 # Copy scripts
 RUN mkdir -p ${repo_dir}/third_party/silabs/slc
