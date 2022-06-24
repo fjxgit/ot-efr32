@@ -44,6 +44,8 @@ jobs:
 
   arm-gcc:
     name: arm-gcc-${{ matrix.gcc_ver }}-${{ matrix.os }}
+    container:
+      image: siliconlabsinc/ot-efr32-dev:9f0b62b
     strategy:
       matrix:
         include:
