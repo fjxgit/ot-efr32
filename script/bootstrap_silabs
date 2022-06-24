@@ -53,7 +53,7 @@ install_slc_cli()
     local zip_url="https://www.silabs.com/documents/login/software/slc_cli_${os_type}.zip"
     pushd "${SLC_INSTALL_DIR}"
     local zip_path="./slc_cli.zip"
-    wget "${zip_url}" -O "${zip_path}"
+    wget -q "${zip_url}" -O "${zip_path}"
     unzip -q -o "${zip_path}" -d "$(dirname ${zip_path})"
     popd
 }
