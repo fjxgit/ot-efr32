@@ -103,7 +103,7 @@ target_link_libraries({{PROJECT_NAME}}-mbedtls
         ot-config
         {{PROJECT_NAME}}-config
     INTERFACE
-        {{PROJECT_NAME}}-sdk
+        {{PROJECT_NAME}}
 )
 
 {#- ========================================================================= #}
