@@ -41,7 +41,6 @@
     with context -%}
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
-include({{PROJECT_NAME}}-sdk.cmake)
 
 # ==============================================================================
 # Platform library
@@ -94,8 +93,8 @@ target_sources({{PROJECT_NAME}} PRIVATE
 {%- for source in (ALL_SOURCES | sort) %}
     {%- set source = prepare_path(source) -%}
 
-    {#- Only take PAL sources #}
-    {%- if ('{PROJECT_SOURCE_DIR}/src/src' in source) -%}
+    {#- Ignore crypto sources and openthread sources #}
+    {%- if ('util/third_party/crypto/mbedtls' not in source) %}
         {%- if source.endswith('.c') or source.endswith('.cpp') or source.endswith('.h') or source.endswith('.hpp') %}
     {{source}}
         {%- endif %}
@@ -106,8 +105,8 @@ target_sources({{PROJECT_NAME}} PRIVATE
 {%- for source in (ALL_SOURCES | sort) %}
     {%- set source = prepare_path(source) -%}
 
-    {#- Only take PAL sources #}
-    {%- if ('${PROJECT_SOURCE_DIR}/src/src' in source) -%}
+    {#- Ignore crypto sources and openthread sources #}
+    {%- if ('util/third_party/crypto/mbedtls' not in source) %}
         {%- if source.endswith('.s') or source.endswith('.S') %}
 target_sources({{PROJECT_NAME}} PRIVATE {{source}})
 set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
@@ -159,9 +158,6 @@ target_compile_definitions({{PROJECT_NAME}}-config INTERFACE
 target_compile_definitions({{PROJECT_NAME}} PUBLIC {{ openthread_device_type() }}
 )
 
-target_compile_definitions({{PROJECT_NAME}}-sdk PRIVATE {{ openthread_device_type() }}
-)
-
 {% endif -%}
 
 {% if EXT_CFLAGS+EXT_CXX_FLAGS -%}
@@ -174,7 +170,6 @@ target_compile_options({{PROJECT_NAME}} PRIVATE {{ compile_flags() }}
 # Linking
 # ==============================================================================
 set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/linkerfile.ld")
-set({{PROJECT_NAME}}-sdk_location $<TARGET_FILE:{{PROJECT_NAME}}-sdk>)
 
 target_link_libraries({{PROJECT_NAME}}
     PUBLIC
@@ -191,9 +186,6 @@ target_link_libraries({{PROJECT_NAME}}
     PRIVATE
         -T${LD_FILE}
         -Wl,--gc-sections
-
-        # The --whole-archive flags are necessary to resolve all symbols from the GSDK
-        -Wl,--whole-archive ${ {{-PROJECT_NAME}}-sdk_location} -Wl,--no-whole-archive
         jlinkrtt
         ot-config
 )
@@ -233,7 +225,7 @@ foreach(lib_file ${GSDK_LIBS})
     set_target_properties(${imported_lib_name}
         PROPERTIES
             IMPORTED_LOCATION "${lib_file}"
-            IMPORTED_LINK_INTERFACE_LIBRARIES {{PROJECT_NAME}}-sdk
+            IMPORTED_LINK_INTERFACE_LIBRARIES {{PROJECT_NAME}}
     )
     target_link_libraries({{PROJECT_NAME}} PUBLIC ${imported_lib_name})
 endforeach()
