@@ -182,10 +182,10 @@ target_link_libraries({{PROJECT_NAME}}
     {%- endif %}
 {%- endfor %}
         {{PROJECT_NAME}}-config
+        -Wl,--gc-sections -Wl,-Map=bin/$<TARGET_PROPERTY:NAME>.map
 
     PRIVATE
         -T${LD_FILE}
-        -Wl,--gc-sections
         jlinkrtt
         ot-config
 )
