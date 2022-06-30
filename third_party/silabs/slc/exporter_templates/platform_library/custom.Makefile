@@ -41,6 +41,7 @@
     with context -%}
 
 include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
+include({{PROJECT_NAME}}-sl_memory.cmake)
 
 # ==============================================================================
 # Platform library
@@ -94,7 +95,8 @@ target_sources({{PROJECT_NAME}} PRIVATE
     {%- set source = prepare_path(source) -%}
 
     {#- Ignore crypto sources and openthread sources #}
-    {%- if ('util/third_party/crypto/mbedtls' not in source) %}
+    {%- if ('util/third_party/crypto/mbedtls' not in source) and
+            ('sl_memory' not in source) %}
         {%- if source.endswith('.c') or source.endswith('.cpp') or source.endswith('.h') or source.endswith('.hpp') %}
     {{source}}
         {%- endif %}
@@ -106,7 +108,8 @@ target_sources({{PROJECT_NAME}} PRIVATE
     {%- set source = prepare_path(source) -%}
 
     {#- Ignore crypto sources and openthread sources #}
-    {%- if ('util/third_party/crypto/mbedtls' not in source) %}
+    {%- if ('util/third_party/crypto/mbedtls' not in source) and
+            ('sl_memory' not in source) %}
         {%- if source.endswith('.s') or source.endswith('.S') %}
 target_sources({{PROJECT_NAME}} PRIVATE {{source}})
 set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
@@ -170,6 +173,7 @@ target_compile_options({{PROJECT_NAME}} PRIVATE {{ compile_flags() }}
 # Linking
 # ==============================================================================
 set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/linkerfile.ld")
+set({{PROJECT_NAME}}-sl_memory-location $<TARGET_FILE:{{PROJECT_NAME}}-sl_memory>)
 
 target_link_libraries({{PROJECT_NAME}}
     PUBLIC
@@ -183,6 +187,9 @@ target_link_libraries({{PROJECT_NAME}}
 {%- endfor %}
         {{PROJECT_NAME}}-config
         -Wl,--gc-sections -Wl,-Map=bin/$<TARGET_PROPERTY:NAME>.map
+
+        # The --whole-archive flags are necessary to resolve all symbols from the GSDK
+        -Wl,--whole-archive ${ {{-PROJECT_NAME}}-sl_memory-location} -Wl,--no-whole-archive
 
     PRIVATE
         -T${LD_FILE}
