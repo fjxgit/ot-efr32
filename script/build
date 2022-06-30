@@ -92,7 +92,7 @@ build()
 
         # TODO: Remove this when slc supports generic jinja template generation
         mv "${current_project_export_dir}/openthread-efr32-soc.Makefile" "${current_project_export_dir}/CMakeLists.txt"
-        rm "${current_project_export_dir}/openthread-efr32-soc.project.mak"
+        mv "${current_project_export_dir}/openthread-efr32-soc.project.mak" "${current_project_export_dir}/openthread-efr32-soc-sl_memory.cmake"
 
         # ==============================================================================================================
         # Generate openthread-efr32-soc-mbedtls lib
@@ -131,7 +131,7 @@ build()
 
         # TODO: Remove this when slc supports generic jinja template generation
         mv "${current_project_export_dir}/openthread-efr32-rcp.Makefile" "${current_project_export_dir}/CMakeLists.txt"
-        rm "${current_project_export_dir}/openthread-efr32-rcp.project.mak"
+        mv "${current_project_export_dir}/openthread-efr32-rcp.project.mak" "${current_project_export_dir}/openthread-efr32-rcp-sl_memory.cmake"
 
         # ==============================================================================================================
         # Generate openthread-efr32-rcp-mbedtls lib
