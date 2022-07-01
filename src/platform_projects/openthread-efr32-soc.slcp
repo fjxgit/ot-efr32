@@ -17,8 +17,15 @@ component:
     instance:
       - btn0
       - btn1
-  - id: power_manager
   - id: rail_util_pti
+
+template_contribution:
+  - name: ot_init
+    value: sl_ot_create_instance
+    priority: 0
+  - name: ot_init
+    value: sl_ot_cli_init
+    priority: 20
 
 configuration:
   - name: SL_BOARD_ENABLE_VCOM
