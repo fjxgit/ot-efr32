@@ -2,7 +2,30 @@
 
 The EFR32 Sleepy applications demonstrates Sleepy End Device behavior using the EFR32's low power EM2 mode. The following are the steps to run the demo.
 
-## 1. Starting Nodes
+For setting up the build environment refer to [OpenThread on EFR32](../../src/README.md).
+
+## 1. Build
+
+In this `README`, all example commands will be targeting the `brd4161a` board on the `efr32mg12` platform. The same commands should work for the other boards
+
+```bash
+$ cd <path-to-ot-efr32>
+$ board="brd4161a"
+$ ./script/build $board
+```
+
+The build script will convert the resulting executables into S-Record format and append a `.s37` file extension.
+
+```bash
+$ ls build/$board/bin/sleepy*
+build/brd4161a/bin/sleepy-demo-ftd  build/brd4161a/bin/sleepy-demo-ftd.s37  build/brd4161a/bin/sleepy-demo-mtd  build/brd4161a/bin/sleepy-demo-mtd.s37
+```
+
+In Silicon Labs Simplicity Studio flash one device with the `sleepy-demo-mtd.s37` image and the other device with the `sleepy-demo-ftd.s37` image.
+
+For instructions on flashing firmware, see [Flashing binaries](../../src/README.md#flashing-binaries)
+
+## 2. Starting nodes
 
 For demonstration purposes the network settings are hardcoded within the source files. The devices start Thread and form a network within a few seconds of powering on. In a real-life application the devices should implement and go through a commissioning process to create a network and add devices.
 
@@ -46,4 +69,8 @@ With further configuration of GPIOs and peripherals it is possible to reduce the
 
 ## 5. Notes on sleeping, sleepy callback and interrupts
 
+<<<<<<< HEAD
 To allow the EFR32 to enter sleepy mode, the application must register a callback with `efr32SetSleepCallback`. The return value of the callback is used to indicate that the application has no further work to do and that it is safe to go into a low power mode. The callback is called with interrupts disabled so should do the minimum required to check if it can sleep.
+=======
+To allow the EFR32 to enter sleepy mode, the application must register a callback with `efr32SetSleepCallback`. The return value of the callback is used to indicate that the application has no further work to do and that it is safe to go into a low power mode. The callback is called with interrupts disabled so should do the minimum required to check if it can sleep.
+>>>>>>> c078171c229fc73e5e26b288a37690cb9e648cb3

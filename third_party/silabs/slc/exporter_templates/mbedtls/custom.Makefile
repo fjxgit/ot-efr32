@@ -102,6 +102,8 @@ target_link_libraries({{PROJECT_NAME}}-mbedtls
     PRIVATE
         ot-config
         {{PROJECT_NAME}}-config
+    INTERFACE
+        {{PROJECT_NAME}}
 )
 
 {#- ========================================================================= #}
