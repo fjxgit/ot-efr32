@@ -4,11 +4,10 @@ import logging
 import subprocess
 
 def execute_and_log(command: list[str], log_file: str, dry_run: bool = False):
-    with open(log_file, 'wb') as log:
+    with open(log_file, 'ab') as log:
         command_str = ' '.join(command)
-        output_command_str = bytes(f">>>> {command_str}\n\n", encoding="utf-8")
-        print(output_command_str.decode("utf-8"))
-        log.write(output_command_str)
+        output_command_str = f">>>> {command_str}\n\n"
+        log.write(bytes(output_command_str, encoding="utf-8"))
         logging.debug(output_command_str)
 
         if dry_run:
