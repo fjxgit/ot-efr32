@@ -68,8 +68,6 @@ set(OT_MBEDTLS ${OT_EXTERNAL_MBEDTLS})
 # NOTE: The "openthread" subdirectory needs to be added after all OT_* variables are defined
 add_subdirectory(openthread)
 
-# Add any efr32 example projects
-add_subdirectory(examples)
 
 target_compile_options(ot-config INTERFACE
     -Wno-shadow
@@ -80,7 +78,9 @@ target_compile_options(ot-config INTERFACE
 # Generated platform projects
 # ==============================================================================
 set(slc_generated_projects
+    ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/build/${BOARD_LOWERCASE}/slc/soc/platform
+    ${PROJECT_SOURCE_DIR}/build/${BOARD_LOWERCASE}/slc/soc/platform-with-buttons-power-manager
     ${PROJECT_SOURCE_DIR}/build/${BOARD_LOWERCASE}/slc/soc/mbedtls
     ${PROJECT_SOURCE_DIR}/build/${BOARD_LOWERCASE}/slc/rcp/platform
     ${PROJECT_SOURCE_DIR}/build/${BOARD_LOWERCASE}/slc/rcp/mbedtls
@@ -97,14 +97,17 @@ foreach(slc_project IN LISTS slc_generated_projects)
 endforeach()
 
 # efr32mg12 Sub-GHz support
-set(EFR32MG12_915MHZ_PHY_SOURCES
-    ${PROJECT_SOURCE_DIR}/src/efr32mg12/phy/PHY_IEEE802154_915MHZ_OQPSK_EFR32XG12.c
-    ${PROJECT_SOURCE_DIR}/src/efr32mg12/phy/PHY_IEEE802154_915MHZ_2GFSK_EFR32XG12.c
-)
-string(COMPARE EQUAL "${PLATFORM_LOWERCASE}" "efr32mg12" _cmp)
-if (_cmp)
-    target_sources(${OT_PLATFORM_LIB} PUBLIC ${EFR32MG12_915MHZ_PHY_SOURCES})
-endif()
+# set(EFR32MG12_915MHZ_PHY_SOURCES
+#     ${PROJECT_SOURCE_DIR}/src/efr32mg12/phy/PHY_IEEE802154_915MHZ_OQPSK_EFR32XG12.c
+#     ${PROJECT_SOURCE_DIR}/src/efr32mg12/phy/PHY_IEEE802154_915MHZ_2GFSK_EFR32XG12.c
+# )
+# string(COMPARE EQUAL "${PLATFORM_LOWERCASE}" "efr32mg12" _cmp)
+# if (_cmp)
+#     target_sources(${OT_PLATFORM_LIB}-soc PUBLIC ${EFR32MG12_915MHZ_PHY_SOURCES})
+# endif()
 
 
 add_subdirectory(third_party)
+
+# Add any efr32 example projects
+add_subdirectory(examples)
