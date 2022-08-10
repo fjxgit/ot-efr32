@@ -43,9 +43,9 @@ include(${PROJECT_SOURCE_DIR}/third_party/silabs/cmake/utility.cmake)
 # ==============================================================================
 # Library of platform dependencies from GSDK and generated config files
 # ==============================================================================
-add_library({{PROJECT_NAME}}-sl_memory)
+add_library({{PROJECT_NAME}}-sdk)
 
-set_target_properties({{PROJECT_NAME}}-sl_memory
+set_target_properties({{PROJECT_NAME}}-sdk
     PROPERTIES
         C_STANDARD 99
         CXX_STANDARD 11
@@ -54,7 +54,7 @@ set_target_properties({{PROJECT_NAME}}-sl_memory
 # ==============================================================================
 # Includes
 # ==============================================================================
-target_include_directories({{PROJECT_NAME}}-sl_memory PUBLIC
+target_include_directories({{PROJECT_NAME}}-sdk PUBLIC
 {%- for include in C_CXX_INCLUDES %}
     {%- if ('sample-apps' not in include) %}
     {{ prepare_path(include) | replace('-I', '') | replace('\"', '') }}
@@ -62,19 +62,20 @@ target_include_directories({{PROJECT_NAME}}-sl_memory PUBLIC
 {%- endfor %}
 )
 
-target_include_directories({{PROJECT_NAME}}-sl_memory PRIVATE
+target_include_directories({{PROJECT_NAME}}-sdk PRIVATE
     ${OT_PUBLIC_INCLUDES}
 )
 
 # ==============================================================================
 # Sources
 # ==============================================================================
-target_sources({{PROJECT_NAME}}-sl_memory PRIVATE
+target_sources({{PROJECT_NAME}}-sdk PRIVATE
 {%- for source in (ALL_SOURCES | sort) %}
     {%- set source = prepare_path(source) -%}
 
-    {#- Only include sl_memory files #}
-    {%- if ('sl_memory' in source) %}
+    {#- Ignore crypto sources, PAL sources, and openthread sources #}
+    {%- if ('util/third_party/crypto/mbedtls' not in source)
+            and ('${SILABS_GSDK_DIR}' in source) %}
         {%- if source.endswith('.c') or source.endswith('.cpp') or source.endswith('.h') or source.endswith('.hpp') %}
     {{source}}
         {%- endif %}
@@ -85,10 +86,12 @@ target_sources({{PROJECT_NAME}}-sl_memory PRIVATE
 {%- for source in (ALL_SOURCES | sort) %}
     {%- set source = prepare_path(source) -%}
 
-    {#- Only include sl_memory files #}
-    {%- if ('sl_memory' in source) %}
+    {#- Ignore crypto sources, PAL sources, and openthread sources #}
+    {%- if ('util/third_party/crypto/mbedtls' not in source)
+            and ('${SILABS_GSDK_DIR}' in source) %}
         {%- if source.endswith('.s') or source.endswith('.S') %}
-target_sources({{PROJECT_NAME}}-sl_memory PRIVATE {{source}})
+
+target_sources({{PROJECT_NAME}}-sdk PRIVATE {{source}})
 set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
         {%- endif %}
     {%- endif %}
@@ -98,7 +101,7 @@ set_property(SOURCE {{source}} PROPERTY LANGUAGE C)
 # ==============================================================================
 #  Compile Options
 # ==============================================================================
-target_compile_options({{PROJECT_NAME}}-sl_memory PRIVATE
+target_compile_options({{PROJECT_NAME}}-sdk PRIVATE
     -Wno-unused-parameter
     -Wno-missing-field-initializers
     {{ compile_flags() }}
@@ -108,8 +111,13 @@ target_compile_options({{PROJECT_NAME}}-sl_memory PRIVATE
 # ==============================================================================
 # Linking
 # ==============================================================================
-target_link_libraries({{PROJECT_NAME}}-sl_memory
+target_link_libraries({{PROJECT_NAME}}-sdk
+    PUBLIC
+        {{PROJECT_NAME}}-mbedtls
     PRIVATE
+{%- for source in SYS_LIBS+USER_LIBS %}
+        {{prepare_path(source)}}
+{%- endfor %}
         {{PROJECT_NAME}}-config
         ot-config
 )
@@ -119,7 +127,7 @@ target_link_libraries({{PROJECT_NAME}}-sl_memory
 # ==============================================================================
 #  Linker Flags
 # ==============================================================================
-target_link_options({{PROJECT_NAME}}-sl_memory PRIVATE {{ print_linker_flags() }}
+target_link_options({{PROJECT_NAME}}-sdk PRIVATE {{ print_linker_flags() }}
 )
 {%- endif %} {# linker_flags #}
 
