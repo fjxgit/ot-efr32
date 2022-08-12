@@ -256,6 +256,9 @@ main()
     # Find slc-cli installation
     slc_init
 
+    # Ensure the GSDK's lfs objects have been pulled
+    git -C ${repo_dir}/third_party/silabs/gecko_sdk/ lfs pull
+
     options+=("$@")
     build -DEFR32_PLATFORM="${platform}" -DBOARD="${board}" "${options[@]}"
     create_srec "${builddir}"
