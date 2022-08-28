@@ -901,13 +901,11 @@ static void efr32RailConfigLoad(efr32BandConfig *aBandConfig)
     }
 
 #if (OPENTHREAD_CONFIG_THREAD_VERSION >= OT_THREAD_VERSION_1_2)
-#if OPENTHREAD_CONFIG_MAC_CSL_RECEIVER_ENABLE
     // 802.15.4E support (only on platforms that support it, so error checking is disabled)
     // Note: This has to be called after RAIL_IEEE802154_Config2p4GHzRadio due to a bug where this call
     // can overwrite options set below.
     RAIL_IEEE802154_ConfigEOptions(gRailHandle, (RAIL_IEEE802154_E_OPTION_GB868 | RAIL_IEEE802154_E_OPTION_ENH_ACK),
                                    (RAIL_IEEE802154_E_OPTION_GB868 | RAIL_IEEE802154_E_OPTION_ENH_ACK));
-#endif // OPENTHREAD_CONFIG_MAC_CSL_RECEIVER_ENABLE
 #endif // (OPENTHREAD_CONFIG_THREAD_VERSION >= OT_THREAD_VERSION_1_2)
 
     status = RAIL_ConfigTxPower(gRailHandle, &txPowerConfig);
