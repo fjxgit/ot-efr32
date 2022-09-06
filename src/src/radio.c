@@ -577,7 +577,7 @@ static otError radioProcessTransmitSecurity(otRadioFrame *aFrame, uint8_t iid)
         otMacFrameSetFrameCounter(aFrame, sMacKeys[iid].macFrameCounter++);
     }
 
-#if defined(_SILICON_LABS_32B_SERIES_2) && OPENTHREAD_RADIO
+#if defined(_SILICON_LABS_32B_SERIES_2)
     efr32PlatProcessTransmitAesCcm(aFrame, &sExtAddress[panIndex]);
 #else
     otMacFrameProcessTransmitAesCcm(aFrame, &sExtAddress[panIndex]);
@@ -1753,6 +1753,25 @@ void otPlatRadioSetMacKey(otInstance *            aInstance,
     memcpy(&sMacKeys[iid].keys[MAC_KEY_PREV], aPrevKey, sizeof(otMacKeyMaterial));
     memcpy(&sMacKeys[iid].keys[MAC_KEY_CURRENT], aCurrKey, sizeof(otMacKeyMaterial));
     memcpy(&sMacKeys[iid].keys[MAC_KEY_NEXT], aNextKey, sizeof(otMacKeyMaterial));
+
+#if defined(_SILICON_LABS_32B_SERIES_2) && (OPENTHREAD_CONFIG_CRYPTO_LIB == OPENTHREAD_CONFIG_CRYPTO_LIB_PSA)
+    size_t aKeyLen = 0;
+
+    assert(otPlatCryptoExportKey(sMacKeys[iid].keys[MAC_KEY_PREV].mKeyMaterial.mKeyRef,
+                                 sMacKeys[iid].keys[MAC_KEY_PREV].mKeyMaterial.mKey.m8,
+                                 sizeof(sMacKeys[iid].keys[MAC_KEY_PREV]), &aKeyLen)
+           == OT_ERROR_NONE);
+
+    assert(otPlatCryptoExportKey(sMacKeys[iid].keys[MAC_KEY_CURRENT].mKeyMaterial.mKeyRef,
+                                 sMacKeys[iid].keys[MAC_KEY_CURRENT].mKeyMaterial.mKey.m8,
+                                 sizeof(sMacKeys[iid].keys[MAC_KEY_CURRENT]), &aKeyLen)
+           == OT_ERROR_NONE);
+
+    assert(otPlatCryptoExportKey(sMacKeys[iid].keys[MAC_KEY_NEXT].mKeyMaterial.mKeyRef,
+                                 sMacKeys[iid].keys[MAC_KEY_NEXT].mKeyMaterial.mKey.m8,
+                                 sizeof(sMacKeys[iid].keys[MAC_KEY_NEXT]), &aKeyLen)
+           == OT_ERROR_NONE);
+#endif
 
     CORE_EXIT_ATOMIC();
 }
