@@ -49,6 +49,20 @@
 #include "board_config.h"
 
 /**
+ * @def OPENTHREAD_CONFIG_PLATFORM_MAC_KEYS_EXPORTABLE_ENABLE
+ *
+ * Calling crypto functions in interrupt context when another operation is running
+ * causes issues in Series-2 devices.  To safeguard enhanced ACK encryption, it is
+ * better to use RADIOAES and not rely on SE.  For series-2 devices, this means we
+ * make MAC keys exportable and copy the literal keys in radio.c (instead of using
+ * key references)
+ *
+ */
+#if defined(_SILICON_LABS_32B_SERIES_2)
+#define OPENTHREAD_CONFIG_PLATFORM_MAC_KEYS_EXPORTABLE_ENABLE 1
+#endif
+
+/**
  * @def OPENTHREAD_CONFIG_CLI_MAX_LINE_LENGTH
  *
  * The maximum size of the CLI line in bytes including the null terminator.
