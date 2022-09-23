@@ -63,6 +63,30 @@ die()
     exit 1
 }
 
+check_gsdk()
+{
+    # Check that git-lfs is installed in the system
+    local git_lfs_version=$(git lfs | head -n 1)
+    echo "${git_lfs_version}"
+
+    # Check RAIL libraries
+    local files_to_check=(
+        "platform/radio/rail_lib/autogen/librail_release/librail_efr32xg1_gcc_release.a"
+        "platform/radio/rail_lib/autogen/librail_release/librail_efr32xg12_gcc_release.a"
+        "platform/radio/rail_lib/autogen/librail_release/librail_efr32xg13_gcc_release.a"
+        "platform/radio/rail_lib/autogen/librail_release/librail_efr32xg21_gcc_release.a"
+        "platform/radio/rail_lib/autogen/librail_release/librail_efr32xg24_gcc_release.a"
+    )
+    for f in ${files_to_check[@]}; do
+        local file_header=$(head -n 1 ${f})
+        if [[ ! "$f" =~ '!<arch>' ]]; then
+            return 1
+        fi
+    done
+
+
+}
+
 build()
 {
     builddir="${OT_CMAKE_BUILD_DIR:-$repo_dir/build/${board}}"
@@ -212,6 +236,9 @@ main()
                 ;;
         esac
     done
+
+    # Ensure that the GSDK was fully cloned
+    check_gsdk
 
     # Parse board
     lowercase_args=$(echo "$@" | tr '[:upper:]' '[:lower:]')
