@@ -14,4 +14,4 @@ COPY ./script ${repo_dir}/script
 COPY ./openthread/script ${repo_dir}/openthread/script
 
 # bootstrap
-RUN ./ot-efr32/script/bootstrap
+RUN ./ot-efr32/script/bootstrap --fast

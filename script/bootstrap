@@ -35,7 +35,7 @@ install_packages_apt()
 
     # apt-get update and install dependencies
     sudo apt-get update
-    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre python3-setuptools python3-pip git-lfs unzip
+    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre python3-setuptools python3-pip git-lfs unzip wget
 }
 
 install_packages_opkg()
@@ -86,10 +86,45 @@ install_packages()
 
 main()
 {
+    local usage="
+
+usage: $0 [-h] [--fast]
+--fast          Skip the OpenThread bootstrap script
+
+"
+
+    local fast=false
+
+    # Parse flags
+    optspec=":h-:"
+    while getopts "$optspec" optchar; do
+        case "${optchar}" in
+            -)
+                case "${OPTARG}" in
+                    fast)
+                        printf '\n\nSkipping OpenThread bootstrap...\n\n' >&2
+                        fast=true
+                        shift 1
+                        ;;
+                    *)
+                        echo "Unknown option --${OPTARG}" >&2
+                        exit 2
+                        ;;
+                esac
+                ;;
+            h)
+                echo "${usage}" >&2
+                exit 2
+                ;;
+        esac
+    done
+
     install_packages
 
-    echo "Bootstrapping openthread"
-    "$(dirname "$0")"/../openthread/script/bootstrap
+    if [ "${fast}" = false ]; then
+        echo "Bootstrapping openthread"
+        "$(dirname "$0")"/../openthread/script/bootstrap
+    fi
 
     echo "Bootstrapping silabs"
     "$(dirname "$0")"/bootstrap_silabs
@@ -97,4 +132,4 @@ main()
     echo "Bootstrap completed successfully."
 }
 
-main
+main "$@"
