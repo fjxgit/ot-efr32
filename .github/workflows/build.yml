@@ -40,7 +40,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
   arm-gcc:
     name: arm-gcc-${{ matrix.gcc_ver }}-${{ matrix.os }}
     if: ${{ github.event.workflow_run.conclusion == 'success' }}

@@ -26,41 +26,54 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 #
 
-name: Checks
+name: Docker images
 
 on:
-  push:
-    branches-ignore:
-      - 'dependabot/**'
-  pull_request:
-    branches:
-      - 'main'
+  # the 1st condition
+  workflow_run:
+    workflows: ["Checks"]
+    types:
+      - completed
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || (github.repository == 'openthread/ot-efr32' && github.run_id) || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || (github.repository == 'openthread/openthread' && github.run_id) || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  pretty:
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: true
-    - name: Bootstrap
-      run: |
-        sudo rm /etc/apt/sources.list.d/* && sudo apt-get update
-        sudo apt-get --no-install-recommends install -y clang-format-14 shellcheck
-        python3 -m pip install yapf==0.29.0
-        sudo snap install shfmt
-    - name: Check
-      run: |
-        script/make-pretty check
-
-  markdown-link-check:
+  build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: gaurav-nelson/github-action-markdown-link-check@v1
-      with:
-        use-verbose-mode: 'yes'
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Create LFS file hash list
+        run: git -C third_party/silabs/gecko_sdk lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore gecko_sdk LFS cache
+        uses: actions/cache@v3
+        id: lfs-cache
+        with:
+            path: .git/modules/third_party/silabs/gecko_sdk/lfs
+            key: lfs-${{ hashFiles('.lfs-assets-id') }}
+
+      - name: Git LFS Pull
+        run: git -C third_party/silabs/gecko_sdk lfs pull
+
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Build and export
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          tags: docker:latest
+          outputs: type=docker,dest=/tmp/myimage.tar
+      -
+        name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: myimage
+          path: /tmp/myimage.tar
