@@ -1,0 +1,16 @@
+{% macro prepare_path(path) -%}
+    {%- set path = path | replace('\\', '/') | replace(' ', '\\ ') -%}
+
+    {#- Replace SDK_PATH with SILABS_GSDK_DIR #}
+    {%- set path = path | replace('$(SDK_PATH)', 'third_party/silabs/gecko_sdk') -%}
+
+    {#- Redirect OpenThread stack sources to the ot-efr32 openthread submodule #}
+    {%- set path = path | replace('${SILABS_GSDK_DIR}/util/third_party/openthread', 'openthread') -%}
+
+    {#- Redirect PAL sources to the ot-efr32 PAL #}
+    {%- set path = path | replace('${SILABS_GSDK_DIR}/protocol/openthread/platform-abstraction/efr32', 'src/src') -%}
+    {%- if not (("-Map=" in path) or ("--specs" in path) or ("linkerfile.ld" in path)) -%}
+{{path}}
+    {%- endif -%}
+{%- endmacro %}
+

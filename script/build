@@ -111,12 +111,11 @@ generate()
         run_slc -v 1 generate \
             -data "${openthread_slc_data}" \
             --sdk="${sdk_dir}" \
-            --clear-cache \
             --project-file="${repo_dir}/src/platform_projects/${project_name}.slcp" \
             --project-name="${project_name}" \
             --output-type=makefile \
             --no-copy \
-            --export-templates="${repo_dir}"/third_party/silabs/slc/exporter_templates/platform_library \
+            --export-templates="${repo_dir}"/third_party/silabs/slc/exporter_templates/print-sources \
             --export-destination="${current_project_export_dir}" \
             --with "${board}"
 
