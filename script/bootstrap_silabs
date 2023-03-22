@@ -60,7 +60,9 @@ install_slc_cli()
 
 main()
 {
-    install_slc_cli
+    if ! command -v slc && ! command -v slc-cli; then
+        install_slc_cli
+    fi
 }
 
 main
