@@ -35,7 +35,7 @@ install_packages_apt()
 
     # apt-get update and install dependencies
     sudo apt-get update
-    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre python3-setuptools python3-pip git-lfs unzip
+    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre python3-setuptools python3-pip git-lfs unzip wget
 }
 
 install_packages_opkg()
@@ -89,7 +89,17 @@ main()
     install_packages
 
     echo "Bootstrapping openthread"
-    "$(dirname "$0")"/../openthread/script/bootstrap
+    OPENTHREAD_BOOTSTRAP_SCRIPT="$(dirname "$0")"/../openthread/script/bootstrap
+    readonly OPENTHREAD_BOOTSTRAP_SCRIPT
+    if [ ! -f "$OPENTHREAD_BOOTSTRAP_SCRIPT" ]; then
+        set +x
+        echo "ERROR: Couldn't find the openthread bootstrap script. Perhaps the submodule needs to be initialized"
+        echo "You can do this from the root of the ot-efr32 repo"
+        echo ""
+        echo "    git submodule update --init --recursive"
+        exit 127
+    fi
+    $OPENTHREAD_BOOTSTRAP_SCRIPT
 
     echo "Bootstrapping silabs"
     "$(dirname "$0")"/bootstrap_silabs
