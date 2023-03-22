@@ -84,12 +84,40 @@ install_packages()
     fi
 }
 
+usage() { echo "Usage: $0 [-h] [--fast]" 1>&2; exit 1; }
+
 main()
 {
+    local fast=false
+
+    # Parse flags
+    optspec=":h-:"
+    while getopts "$optspec" optchar; do
+        case "${optchar}" in
+            -)
+                case "${OPTARG}" in
+                    "fast")
+                        fast=true
+                        shift 1
+                        ;;
+                    *)
+                        echo "Unknown option --${OPTARG}" >&2
+                        usage
+                        ;;
+                esac
+                ;;
+            h)
+                usage
+                ;;
+        esac
+    done
+
     install_packages
 
-    echo "Bootstrapping openthread"
-    "$(dirname "$0")"/../openthread/script/bootstrap
+    if [ "${fast}" = false ]; then
+        echo "Bootstrapping openthread"
+        "$(dirname "$0")"/../openthread/script/bootstrap
+    fi
 
     echo "Bootstrapping silabs"
     "$(dirname "$0")"/bootstrap_silabs
@@ -97,4 +125,4 @@ main()
     echo "Bootstrap completed successfully."
 }
 
-main
+main "$@"
