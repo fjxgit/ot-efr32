@@ -31,11 +31,39 @@ set -euxo pipefail
 
 install_packages_apt()
 {
-    echo 'Installing script dependencies...'
-
     # apt-get update and install dependencies
+    echo 'Installing script dependencies...'
     sudo apt-get update
-    sudo apt-get --no-install-recommends install -y coreutils openjdk-11-jre python3-setuptools python3-pip git-lfs unzip
+    sudo apt-get --no-install-recommends install -y \
+        coreutils \
+        git-lfs \
+        ninja-build \
+        openjdk-11-jre \
+        python3-pip \
+        python3-setuptools \
+        unzip \
+        wget
+
+    echo 'Installing GNU Arm Embedded Toolchain...'
+    # Check if GNU Arm Embedded toolchain 10.3 is available via apt
+    ARM_GCC_VERSION="10.3"
+    apt-cache policy gcc-arm-none-eabi | grep -oP "Candidate: .*${ARM_GCC_VERSION}.*"
+    if [ -z $? ]; then
+        sudo apt-get install -y gcc-arm-none-eabi
+    else
+        local arch=$(arch)
+        local gcc_download_url="https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-${ARCH}-linux.tar.bz2"
+        local gcc_extract_dir="gcc-arm-none-eabi-10.3-2021.10"
+
+        sudo apt-get --no-install-recommends install -y bzip2 ca-certificates wget
+        wget --tries 4 --no-check-certificate --quiet ${{ matrix.gcc_download_url }} -O gcc-arm.tar.bz2
+
+        (cd /tmp \
+            && wget --tries 4 --no-check-certificate --quiet -c ${gcc_download_url} -O gcc-arm.tar.bz2 \
+            && sudo tar xjf gcc-arm.tar.bz2 -C /opt \
+            && rm gcc-arm.tar.bz2 \
+            && sudo ln -s -f /opt/${gcc_extract_dir}/bin/* /usr/local/bin/.)
+    fi
 }
 
 install_packages_opkg()

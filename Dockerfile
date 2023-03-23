@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 
 ENV TZ="America/New_York"
@@ -16,12 +16,13 @@ COPY ./script /tmp/ot-efr32/script
 COPY ./openthread/script /tmp/ot-efr32/openthread/script
 
 # Bootstrap
-RUN /tmp/ot-efr32/openthread/script/bootstrap
+# RUN /tmp/ot-efr32/openthread/script/bootstrap
 ENV SLC_INSTALL_DIR="/opt"
 RUN /tmp/ot-efr32/script/bootstrap --fast
 
-# Link slc-cli
+# Link slc-cli to /usr/bin as both 'slc' and 'slc-cli'
 RUN ln -s ${SLC_INSTALL_DIR}/slc_cli/bin/slc-cli/slc-cli /usr/bin
+RUN ln -s ${SLC_INSTALL_DIR}/slc_cli/bin/slc-cli/slc-cli /usr/bin/slc
 
 # Clone repo for convenience
 RUN git clone https://github.com/openthread/ot-efr32.git ${repo_dir}
