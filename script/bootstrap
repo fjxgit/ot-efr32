@@ -84,7 +84,7 @@ install_packages_source()
 
 install_packages_pip3()
 {
-    pip3 install --no-cache-dir --upgrade -r "${repo_dir}/requirements.txt"
+    pipx install --no-cache-dir --upgrade -r "${repo_dir}/requirements.txt"
 }
 
 install_packages()
